@@ -16,8 +16,8 @@ class _HomePageState extends State<HomePage> {
     const HomeContacts(),
   ];
   //
-  int currentIndex = 0;
-  late Widget currentPage = tabsList[0];
+  int currentIndex = 1;
+  late Widget currentPage = tabsList[1];
   DateTime? _lastQuitTime;
   final List<BottomNavigationBarItem> bottomTabsList = [
     const BottomNavigationBarItem(
