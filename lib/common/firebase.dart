@@ -5,9 +5,9 @@ import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/main.dart';
 
 var db = FirebaseFirestore.instance;
-const USERS = 'user';
+const UsersDbKey = 'Users';
 const NOTIFICATION = "notification";
-addContacts(String email) async {
+addContacts(String email, String remarks) async {
   // if not logged in
   if (FirebaseAuth.instance.currentUser == null) return;
   var currentUser = FirebaseAuth.instance.currentUser!;
@@ -18,7 +18,14 @@ addContacts(String email) async {
     'status': "pending",
     'uid': currentUser.uid,
     'photoURL': currentUser.photoURL,
+    'remarks': remarks
   };
+  if (email == currentUser.email) {
+    return showMessage(
+        context: navigatorKey.currentState!.context,
+        type: 'warning',
+        title: 'cannot add itself');
+  }
   // Does the user exist
   final query = await searchUserByEmail(email);
   if (query.docs.isEmpty) {
@@ -27,8 +34,31 @@ addContacts(String email) async {
         type: 'warning',
         title: 'User does not exist');
   }
+  var notificationData = await db
+      .collection(NOTIFICATION)
+      .where('email', isEqualTo: currentUser.email)
+      .where('targetEmail', isEqualTo: email)
+      .where('status', isEqualTo: 'pending')
+      .get();
+  if (notificationData.docs.isNotEmpty) {
+    return showMessage(
+        context: navigatorKey.currentState!.context,
+        type: 'warning',
+        title: 'You have already sent an in invitation!');
+  }
+  db.collection(NOTIFICATION).add(data).then((value) {
+    showMessage(
+        context: navigatorKey.currentState!.context,
+        title: 'success, please wait');
+  }).catchError((err) {
+    showMessage(
+        context: navigatorKey.currentState!.context,
+        type: 'danger',
+        title: err.toString());
+  });
 }
 
-searchUserByEmail(String email) {
-  return db.collection(USERS).where('email', isEqualTo: email).get();
+Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmail(
+    String email) async {
+  return db.collection(UsersDbKey).where('email', isEqualTo: email).get();
 }

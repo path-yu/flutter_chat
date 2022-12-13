@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -101,11 +102,24 @@ class _RegisterPageState extends State<RegisterPage> {
                                 FirebaseAuth.instance
                                     .createUserWithEmailAndPassword(
                                         email: email, password: password)
-                                    .then((value) {
+                                    .then((userCredential) {
+                                  // save userData
+                                  db
+                                      .collection(UsersDbKey)
+                                      .doc(userCredential.user!.uid)
+                                      .set({
+                                    email: userCredential.user!.email,
+                                    'photoURl': "",
+                                    'suggest': "",
+                                    'createTime': DateTime.now(),
+                                    'contacts': [],
+                                    'lastLoginTime': DateTime.now(),
+                                    'online': true
+                                  });
                                   showMessage(
                                       context: context,
                                       title:
-                                          'register success, Automatically logged in for you');
+                                          'register success, logging you in');
                                   FirebaseAuth.instance
                                       .signInWithEmailAndPassword(
                                           email: email, password: password)

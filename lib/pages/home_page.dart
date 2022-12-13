@@ -4,6 +4,7 @@ import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 
 class HomePage extends StatefulWidget {
+  //
   const HomePage({super.key});
 
   @override
