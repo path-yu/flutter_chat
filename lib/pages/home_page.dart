@@ -1,51 +1,75 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
+import 'package:badges/badges.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
-class HomePage extends StatefulWidget {
-  //
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final tabsList = [
-    const HomeMessages(),
-    const HomeContacts(),
-  ];
-  //
-  int currentIndex = 1;
-  late Widget currentPage = tabsList[1];
-  DateTime? _lastQuitTime;
-  final List<BottomNavigationBarItem> bottomTabsList = [
-    const BottomNavigationBarItem(
-        icon: Icon(
-          Icons.chat,
-        ),
-        label: 'Messages'),
-    const BottomNavigationBarItem(
-        icon: Icon(
-          Icons.people,
-        ),
-        label: 'Contacts'),
-  ];
+class HomePage extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    //
+    final currentIndex = useState(0);
+
+    final newFriendsBadgeCount = useState(0);
+    Widget currentPage;
+    if (currentIndex.value == 1) {
+      currentPage = HomeContacts(
+        hasNewFriends: newFriendsBadgeCount.value != 0,
+      );
+    } else {
+      currentPage = const HomeMessages();
+    }
+    num count = newFriendsBadgeCount.value;
+
+    useEffect(() {
+      print('mount');
+      var currentUser = FirebaseAuth.instance.currentUser!;
+      // listener add contact notification
+      db
+          .collection(NOTIFICATION)
+          .where('targetEmail', isEqualTo: currentUser.email)
+          .where('type', isEqualTo: 'addContact')
+          .snapshots()
+          .listen((querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          // filter pending
+          newFriendsBadgeCount.value = querySnapshot.docs
+              .where((element) {
+                return element.data()['status'] == 'pending';
+              })
+              .toList()
+              .length;
+        }
+      });
+      return () {
+        print('umount');
+      };
+    }, []);
+    final List<BottomNavigationBarItem> bottomTabsList = [
+      const BottomNavigationBarItem(
+          icon: Icon(Icons.message), label: 'Messages'),
+      BottomNavigationBarItem(
+          icon: newFriendsBadgeCount.value != 0
+              ? Badge(
+                  badgeContent: Text(
+                    '$count',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  child: const Icon(Icons.people),
+                )
+              : const Icon(Icons.people),
+          label: 'Contacts'),
+    ];
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: currentIndex,
+        currentIndex: currentIndex.value,
         items: bottomTabsList,
         selectedItemColor: primaryColor,
         onTap: (index) {
-          setState(() {
-            currentIndex = index;
-            currentPage = tabsList[currentIndex];
-          });
+          currentIndex.value = index;
         },
       ),
       body: currentPage,

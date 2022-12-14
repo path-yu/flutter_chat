@@ -34,6 +34,7 @@ dependencies:
   flutter_hooks: ^0.18.5+1
   octo_image: ^1.0.2
   cached_network_image: ^3.2.3
+  badges: ^2.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

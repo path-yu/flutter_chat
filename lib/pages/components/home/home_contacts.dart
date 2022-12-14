@@ -1,10 +1,12 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeContacts extends StatefulWidget {
-  const HomeContacts({super.key});
+  final bool? hasNewFriends;
+  const HomeContacts({super.key, this.hasNewFriends});
 
   @override
   State<HomeContacts> createState() => _HomeContactsState();
@@ -18,6 +20,7 @@ class _HomeContactsState extends State<HomeContacts> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.hasNewFriends);
     return Scaffold(
       drawer: const DrawerHead(),
       appBar: buildAppBar('Contacts', context,
@@ -45,11 +48,22 @@ class _HomeContactsState extends State<HomeContacts> {
       body: Column(
         children: [
           ListTile(
-            onTap: () {},
-            leading: Icon(
-              Icons.person_add,
-              size: ScreenUtil().setSp(25),
-            ),
+            onTap: () {
+              Navigator.pushNamed(context, '/newFriends');
+            },
+            leading:
+                widget.hasNewFriends != null && widget.hasNewFriends == true
+                    ? Badge(
+                        position: BadgePosition.topEnd(top: -2),
+                        child: Icon(
+                          Icons.person_add,
+                          size: ScreenUtil().setSp(25),
+                        ),
+                      )
+                    : Icon(
+                        Icons.person_add,
+                        size: ScreenUtil().setSp(25),
+                      ),
             title: const Text('new friends'),
           ),
           ListTile(

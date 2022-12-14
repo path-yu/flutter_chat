@@ -32,7 +32,7 @@ class _HomeMessagesState extends State<HomeMessages> {
               ),
             ),
           )),
-      body: ListView.builder(
+      body: ListView.separated(
         itemBuilder: (context, index) {
           return ListTile(
             onTap: () {
@@ -56,6 +56,13 @@ class _HomeMessagesState extends State<HomeMessages> {
           );
         },
         itemCount: 30,
+        separatorBuilder: (BuildContext context, int index) {
+          return Divider(
+            color: Colors.grey,
+            height: ScreenUtil().setHeight(1),
+            indent: ScreenUtil().setWidth(65),
+          );
+        },
       ),
     );
   }

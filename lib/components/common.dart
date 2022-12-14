@@ -137,6 +137,16 @@ Future<bool?> showBaseAlertDialog(
       });
 }
 
-const enableReminderKey = 'enableReminderKey';
-const reminderTimeKey = 'enableReminderTimeKey';
-const reminderTimeTypeIndexKey = 'reminderTimeTypeIndexKey';
+var baseDivider = Divider(
+  color: Colors.grey,
+  height: ScreenUtil().setHeight(1),
+  indent: ScreenUtil().setWidth(65),
+);
+
+var baseLoading = const SizedBox(
+  width: double.infinity,
+  height: double.infinity,
+  child: Center(
+    child: CircularProgressIndicator(),
+  ),
+);

@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
               navigatorKey: navigatorKey, // set property
               debugShowCheckedModeBanner: false,
               routes: baseRoutes,
-              initialRoute: '/addContact',
+              initialRoute: '/newFriends',
               theme: ThemeData(
                 // is not restarted.
                 primarySwatch: Colors.blue,

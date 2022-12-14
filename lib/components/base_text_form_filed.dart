@@ -8,6 +8,7 @@ class BaseTextFormFiled extends StatefulWidget {
   final void Function(String?)? onChanged;
   final bool? obscureText;
   final void Function()? onEditingComplete;
+  final TextInputAction? textInputAction;
   const BaseTextFormFiled(
       {super.key,
       required this.prefixIcon,
@@ -15,7 +16,8 @@ class BaseTextFormFiled extends StatefulWidget {
       this.validator,
       this.onChanged,
       this.obscureText = false,
-      this.onEditingComplete});
+      this.onEditingComplete,
+      this.textInputAction});
 
   @override
   State<BaseTextFormFiled> createState() => _BaseTextFormFiledState();
@@ -47,6 +49,7 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
       obscureText: widget.obscureText!,
       validator: widget.validator,
       onChanged: widget.onChanged,
+      textInputAction: widget.textInputAction,
       onEditingComplete: widget.onEditingComplete,
       decoration: InputDecoration(
           suffixIcon: value.isNotEmpty

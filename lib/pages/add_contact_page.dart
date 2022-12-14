@@ -126,7 +126,7 @@ class _AddContactPageState extends State<AddContactPage> {
               child: ElevatedButton(
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
-                      addContacts(email, remarks);
+                      addContactsNotification(email, remarks);
                     }
                   },
                   child: const Text('confirm')),
