@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
+import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -103,19 +105,37 @@ class _RegisterPageState extends State<RegisterPage> {
                                     .createUserWithEmailAndPassword(
                                         email: email, password: password)
                                     .then((userCredential) {
+                                  var defaultUserName = 'user-$email';
+                                  var defaultAvatar =
+                                      'https://avatars.githubusercontent.com/u/52821367?v=4';
+                                  var defaultSuggest = "There's nothing here";
+
+                                  FirebaseAuth.instance.currentUser!
+                                      .updateDisplayName(defaultUserName);
+
+                                  FirebaseAuth.instance.currentUser!
+                                      .updatePhotoURL(defaultAvatar);
                                   // save userData
+                                  var data = {
+                                    'email': userCredential.user!.email,
+                                    'photoURL': defaultAvatar,
+                                    'suggest': defaultSuggest,
+                                    'createTime':
+                                        DateTime.now().millisecondsSinceEpoch,
+                                    'contacts': [],
+                                    'lastLoginTime':
+                                        DateTime.now().millisecondsSinceEpoch,
+                                    'online': true,
+                                    'userName': defaultUserName,
+                                    'uid': userCredential.user!.uid
+                                  };
                                   db
                                       .collection(UsersDbKey)
                                       .doc(userCredential.user!.uid)
-                                      .set({
-                                    email: userCredential.user!.email,
-                                    'photoURl': "",
-                                    'suggest': "",
-                                    'createTime': DateTime.now(),
-                                    'contacts': [],
-                                    'lastLoginTime': DateTime.now(),
-                                    'online': true
-                                  });
+                                      .set(data);
+                                  context
+                                      .read<CurrentUser>()
+                                      .setCurrentUser(MyUser.fromJson(data));
                                   showMessage(
                                       context: context,
                                       title:
@@ -127,6 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     Navigator.pushNamed(context, '/');
                                   });
                                 }).onError((error, stackTrace) {
+                                  print(error);
                                   showMessage(
                                       context: context,
                                       title: error.toString(),

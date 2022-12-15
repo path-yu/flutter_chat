@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
+import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class HomeMessages extends StatefulWidget {
   const HomeMessages({super.key});
@@ -16,19 +18,23 @@ class _HomeMessagesState extends State<HomeMessages> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const DrawerHead(),
+      drawer: DrawerHead(
+        scaffoldKey: _scaffoldKey,
+      ),
       appBar: buildAppBar('Chat', context,
           showBackButton: false,
-          leadingWidth: ScreenUtil().setWidth(30),
           leading: GestureDetector(
             onTap: () {
               _scaffoldKey.currentState!.openDrawer();
             },
-            child: Padding(
-              padding: EdgeInsets.only(left: ScreenUtil().setWidth(5)),
-              child: const Image(
-                image: NetworkImage(
-                    'https://avatars.githubusercontent.com/u/59117479?v=4'),
+            child: Container(
+              margin: EdgeInsets.all(ScreenUtil().setWidth(10)),
+              child: ClipOval(
+                child: Image.network(
+                  context.watch<CurrentUser>().value!.photoURL,
+                  fit: BoxFit.fill,
+                  height: ScreenUtil().setHeight(40),
+                ),
               ),
             ),
           )),
@@ -44,7 +50,7 @@ class _HomeMessagesState extends State<HomeMessages> {
                 width: ScreenUtil().setWidth(45),
                 height: ScreenUtil().setHeight(45),
                 image: const NetworkImage(
-                    'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+                    'https://firebasestorage.googleapis.com/v0/b/chat-fe875.appspot.com/o/images%20(1).jpg?alt=media&token=eb206a7a-1802-48ec-b3e5-44d74857ab5f'),
               ),
             ),
             title: const Text('path-yu'),

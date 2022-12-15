@@ -4,19 +4,21 @@ import 'package:flutter_chat/components/common.dart';
 class BaseTextFormFiled extends StatefulWidget {
   final String? Function(String?)? validator;
   final String? hintText;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final void Function(String?)? onChanged;
   final bool? obscureText;
   final void Function()? onEditingComplete;
   final TextInputAction? textInputAction;
+  final String? labelText;
   const BaseTextFormFiled(
       {super.key,
-      required this.prefixIcon,
+      this.prefixIcon,
       this.hintText,
       this.validator,
       this.onChanged,
       this.obscureText = false,
       this.onEditingComplete,
+      this.labelText,
       this.textInputAction});
 
   @override
@@ -52,13 +54,15 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
       textInputAction: widget.textInputAction,
       onEditingComplete: widget.onEditingComplete,
       decoration: InputDecoration(
+          labelText: widget.labelText,
           suffixIcon: value.isNotEmpty
               ? buildClearInputIcon((() {
                   _controller.clear();
                 }))
               : null,
           hintText: widget.hintText,
-          prefixIcon: buildIcon(widget.prefixIcon)),
+          prefixIcon:
+              widget.prefixIcon != null ? buildIcon(widget.prefixIcon!) : null),
     );
   }
 }

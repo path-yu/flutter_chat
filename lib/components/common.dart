@@ -150,3 +150,22 @@ var baseLoading = const SizedBox(
     child: CircularProgressIndicator(),
   ),
 );
+Widget buildOneLineText(text) {
+  return Text(
+    text,
+    maxLines: 1,
+    style: const TextStyle(
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}
+
+Widget buildBaseEmptyWidget(String message) {
+  return SizedBox(
+    width: double.infinity,
+    height: double.infinity,
+    child: Center(
+      child: Opacity(opacity: 0.6, child: Text(message)),
+    ),
+  );
+}

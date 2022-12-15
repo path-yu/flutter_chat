@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/provider/current_user.dart';
+import 'package:provider/provider.dart';
 
 class DrawerHead extends StatelessWidget {
-  const DrawerHead({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  const DrawerHead({super.key, required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
@@ -14,26 +17,23 @@ class DrawerHead extends StatelessWidget {
           UserAccountsDrawerHeader(
             // UserAccountsDrawerHeader 可以设置用户头像、用户名、Email 等信息，显示一个符合纸墨设计规范的 drawer header。
             // 标题
-            accountName: const Text('path-yu',
+            accountName: Text(context.watch<CurrentUser>().value!.userName,
                 style: TextStyle(fontWeight: FontWeight.bold)),
             // 副标题
-            accountEmail: const Text('https://github.com/path-yu'),
+            accountEmail: Text(context.watch<CurrentUser>().value!.suggest),
             // Emails
-            currentAccountPicture: const CircleAvatar(
-              // 使用网络加载图像
-              backgroundImage: NetworkImage(
-                  'https://avatars.githubusercontent.com/u/59117479?v=4'),
+            currentAccountPicture: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/editUser');
+                scaffoldKey.currentState!.closeDrawer();
+              },
+              child: CircleAvatar(
+                // 使用网络加载图像
+                backgroundImage: NetworkImage(
+                  context.watch<CurrentUser>().value!.photoURL,
+                ),
+              ),
             ),
-            // 圆角头像
-            decoration: BoxDecoration(
-                color: Colors.yellow[400],
-                image: DecorationImage(
-                    image: const NetworkImage(
-                        'https://avatars.githubusercontent.com/u/59117479?v=4'),
-                    fit: BoxFit.cover, // 一种图像的布局方式
-                    colorFilter: ColorFilter.mode(
-                        Colors.grey[400]!.withOpacity(0.6),
-                        BlendMode.hardLight))),
             //  BoxDecoration 用于制作背景
           ),
           // ListTile是下方的几个可点按List

@@ -95,63 +95,70 @@ class NewFriendsPage extends HookWidget {
                     ),
                   ),
                   Expanded(
-                      child: ListView.separated(
-                    itemBuilder: (context, index) {
-                      var item = listData.value[index];
-                      var isMyRequest = currentUser.email == item['email'];
-                      var photoURL = isMyRequest
-                          ? item['targetUserPhotoURL']
-                          : item['photoURL'];
-                      var userName = isMyRequest
-                          ? item['targetUserName']
-                          : item['userName'];
-                      var remarks = item['remarks'];
-                      String status = item['status'];
-                      return ListTile(
-                          onTap: () {},
-                          leading: ClipRect(
-                            child: OctoImage(
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              image: CachedNetworkImageProvider(photoURL),
-                            ),
-                          ),
-                          title: Text(userName),
-                          subtitle: Text(
-                            remarks,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          trailing: isMyRequest
-                              ? Text(
-                                  statusMapText[status]!,
-                                  style: subtitleTextStyle,
-                                )
-                              : status == 'pending'
-                                  ? Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                handleAgreeClick(index),
-                                            child: const Text('agree')),
-                                        TextButton(
-                                            onPressed: () =>
-                                                handleRejectClick(index),
-                                            child: const Text('reject'))
-                                      ],
-                                    )
-                                  : Text(statusMapText[status]!,
-                                      style: subtitleTextStyle));
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return baseDivider;
-                    },
-                    itemCount: listData.value.length,
-                  ))
+                      child: listData.value.isEmpty
+                          ? buildBaseEmptyWidget('no data')
+                          : ListView.separated(
+                              itemBuilder: (context, index) {
+                                var item = listData.value[index];
+                                var isMyRequest =
+                                    currentUser.email == item['email'];
+                                var photoURL = isMyRequest
+                                    ? item['targetUserPhotoURL']
+                                    : item['photoURL'];
+                                var userName = isMyRequest
+                                    ? item['targetUserName']
+                                    : item['userName'];
+                                var remarks = item['remarks'];
+                                String status = item['status'];
+                                return ListTile(
+                                    onTap: () {},
+                                    leading: ClipRect(
+                                      child: OctoImage(
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        image: CachedNetworkImageProvider(
+                                            photoURL),
+                                      ),
+                                    ),
+                                    title: buildOneLineText(
+                                      userName,
+                                    ),
+                                    subtitle: buildOneLineText(
+                                      remarks,
+                                    ),
+                                    trailing: isMyRequest
+                                        ? Text(
+                                            statusMapText[status]!,
+                                            style: subtitleTextStyle,
+                                          )
+                                        : status == 'pending'
+                                            ? Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          handleAgreeClick(
+                                                              index),
+                                                      child:
+                                                          const Text('agree')),
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          handleRejectClick(
+                                                              index),
+                                                      child:
+                                                          const Text('reject'))
+                                                ],
+                                              )
+                                            : Text(statusMapText[status]!,
+                                                style: subtitleTextStyle));
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) {
+                                return baseDivider;
+                              },
+                              itemCount: listData.value.length,
+                            ))
                 ],
               ),
       ),

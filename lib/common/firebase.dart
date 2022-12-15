@@ -40,8 +40,9 @@ addContactsNotification(String email, String remarks) async {
         type: 'warning',
         title: 'User does not exist');
   } else {
-    data['targetUserName'] = query.docs[0].data()['displayName'];
-    data['targetUserPhotoURL'] = query.docs[0].data()['photoURL'];
+    var userData = query.docs[0].data();
+    data['targetUserName'] = userData['userName'];
+    data['targetUserPhotoURL'] = userData['photoURL'];
   }
   // Is already a friend
   final queryContact = await userCollection
@@ -98,6 +99,10 @@ Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmail(
   return db.collection(UsersDbKey).where('email', isEqualTo: email).get();
 }
 
+Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmails(List emails) {
+  return db.collection(UsersDbKey).where('email', whereIn: emails).get();
+}
+
 User getCurrentUser() {
   return FirebaseAuth.instance.currentUser!;
 }
@@ -107,3 +112,9 @@ var statusMapText = {
   'success': 'added',
   'rejected': 'rejected'
 };
+List<Map<String, dynamic>> mapQuerySnapshotData(
+    QuerySnapshot<Map<String, dynamic>> data) {
+  return data.docs.map((e) {
+    return {'id': e.id, ...e.data()};
+  }).toList();
+}

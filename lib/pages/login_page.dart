@@ -122,7 +122,8 @@ class _LoginPageState extends State<LoginPage>
                                           email: email, password: password)
                                       .then((value) {
                                     showMessage(
-                                        context: context, title: '登录成功');
+                                        context: context,
+                                        title: 'login successful');
                                     Navigator.pushNamed(context, '/');
                                   }).onError((error, stackTrace) {
                                     showMessage(

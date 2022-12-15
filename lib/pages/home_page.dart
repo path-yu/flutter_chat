@@ -5,9 +5,13 @@ import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
+import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends HookWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = useState(0);
@@ -24,7 +28,6 @@ class HomePage extends HookWidget {
     num count = newFriendsBadgeCount.value;
 
     useEffect(() {
-      print('mount');
       var currentUser = FirebaseAuth.instance.currentUser!;
       // listener add contact notification
       db
@@ -43,9 +46,17 @@ class HomePage extends HookWidget {
               .length;
         }
       });
-      return () {
-        print('umount');
-      };
+      db
+          .collection(UsersDbKey)
+          .doc(getCurrentUser().uid)
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists) {
+          var data = doc.data()!;
+          context.read<CurrentUser>().setCurrentUser(MyUser.fromJson(data));
+        }
+      });
+      return null;
     }, []);
     final List<BottomNavigationBarItem> bottomTabsList = [
       const BottomNavigationBarItem(

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/router/index.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,8 +16,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
-  // 以下两行 设置android状态栏为透明的沉浸。写在组件渲染之后，
+  var currentUser = CurrentUser();
+  if (FirebaseAuth.instance.currentUser != null) {
+    var user = await searchUserByEmail(getCurrentUser().email!);
+    currentUser.initData(MyUser.fromJson(user.docs[0].data()));
+  }
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => currentUser),
+    ],
+    child: const MyApp(),
+  ));
   SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.blue,
@@ -37,7 +49,7 @@ class MyApp extends StatelessWidget {
               navigatorKey: navigatorKey, // set property
               debugShowCheckedModeBanner: false,
               routes: baseRoutes,
-              initialRoute: '/newFriends',
+              initialRoute: '/editUser',
               theme: ThemeData(
                 // is not restarted.
                 primarySwatch: Colors.blue,
