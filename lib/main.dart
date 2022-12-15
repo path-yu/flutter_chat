@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
               navigatorKey: navigatorKey, // set property
               debugShowCheckedModeBanner: false,
               routes: baseRoutes,
-              initialRoute: '/editUser',
+              initialRoute: '/',
               builder: EasyLoading.init(),
               theme: ThemeData(
                 // is not restarted.
