@@ -56,7 +56,7 @@ class MyUser {
     data['lastLoginTime'] = lastLoginTime;
     data['online'] = online;
     data['userName'] = userName;
-    data['contacts'] = contacts;
+    data['photoURL'] = photoURL;
     data['contacts'] = contacts;
     data['uid'] = uid;
     return data;

@@ -10,6 +10,9 @@ class BaseTextFormFiled extends StatefulWidget {
   final void Function()? onEditingComplete;
   final TextInputAction? textInputAction;
   final String? labelText;
+  final String? initialValue;
+  final int? maxLines;
+  final TextInputType? keyboardType;
   const BaseTextFormFiled(
       {super.key,
       this.prefixIcon,
@@ -19,7 +22,10 @@ class BaseTextFormFiled extends StatefulWidget {
       this.obscureText = false,
       this.onEditingComplete,
       this.labelText,
-      this.textInputAction});
+      this.initialValue = '',
+      this.maxLines,
+      this.textInputAction,
+      this.keyboardType});
 
   @override
   State<BaseTextFormFiled> createState() => _BaseTextFormFiledState();
@@ -32,7 +38,11 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialValue != null) {
+      value = widget.initialValue!;
+    }
     _controller.text = value;
+
     _controller.addListener(() {
       setState(() => value = _controller.text);
     });
@@ -53,6 +63,8 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
       onChanged: widget.onChanged,
       textInputAction: widget.textInputAction,
       onEditingComplete: widget.onEditingComplete,
+      maxLines: widget.maxLines,
+      keyboardType: widget.keyboardType,
       decoration: InputDecoration(
           labelText: widget.labelText,
           suffixIcon: value.isNotEmpty

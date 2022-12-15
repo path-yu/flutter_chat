@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/router/index.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,18 @@ void main() async {
   if (FirebaseAuth.instance.currentUser != null) {
     var user = await searchUserByEmail(getCurrentUser().email!);
     currentUser.initData(MyUser.fromJson(user.docs[0].data()));
+  } else {
+    // default data
+    currentUser.initData(MyUser.fromJson({
+      'email': '',
+      'createTime': DateTime.now().millisecondsSinceEpoch.toString(),
+      'lastLoginTime': DateTime.now().millisecondsSinceEpoch.toString(),
+      'suggest': '',
+      'online': true,
+      'contacts': [],
+      'uid': '',
+      'userName': ''
+    }));
   }
   runApp(MultiProvider(
     providers: [
@@ -50,6 +63,7 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               routes: baseRoutes,
               initialRoute: '/editUser',
+              builder: EasyLoading.init(),
               theme: ThemeData(
                 // is not restarted.
                 primarySwatch: Colors.blue,

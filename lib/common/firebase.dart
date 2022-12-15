@@ -1,6 +1,7 @@
 // add contacts
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/main.dart';
 
@@ -118,3 +119,6 @@ List<Map<String, dynamic>> mapQuerySnapshotData(
     return {'id': e.id, ...e.data()};
   }).toList();
 }
+
+// Create a storage reference from our app
+final storageRef = FirebaseStorage.instance.ref();
