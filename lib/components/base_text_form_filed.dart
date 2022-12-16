@@ -70,6 +70,9 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
           suffixIcon: value.isNotEmpty
               ? buildClearInputIcon((() {
                   _controller.clear();
+                  if (widget.onChanged != null) {
+                    widget.onChanged!('');
+                  }
                 }))
               : null,
           hintText: widget.hintText,

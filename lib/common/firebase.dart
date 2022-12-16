@@ -2,13 +2,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/main.dart';
 
 var db = FirebaseFirestore.instance;
 const UsersDbKey = 'Users';
 const NOTIFICATION = "notification";
-addContactsNotification(String email, String remarks) async {
+addContactsNotification(
+    String email, String remarks, BuildContext context) async {
   // if not logged in
   if (FirebaseAuth.instance.currentUser == null) return;
   var currentUser = FirebaseAuth.instance.currentUser!;
@@ -29,8 +31,6 @@ addContactsNotification(String email, String remarks) async {
     'uid': currentUser.uid,
     'photoURL': currentUser.photoURL,
     'remarks': remarks,
-    'targetUserPhotoURL': '',
-    'targetUserName': ''
   };
 
   // Does the user exist
@@ -40,10 +40,6 @@ addContactsNotification(String email, String remarks) async {
         context: navigatorKey.currentState!.context,
         type: 'warning',
         title: 'User does not exist');
-  } else {
-    var userData = query.docs[0].data();
-    data['targetUserName'] = userData['userName'];
-    data['targetUserPhotoURL'] = userData['photoURL'];
   }
   // Is already a friend
   final queryContact = await userCollection
@@ -92,6 +88,7 @@ addContactsNotification(String email, String remarks) async {
         context: navigatorKey.currentState!.context,
         type: 'danger',
         title: err.toString());
+    Navigator.pop(context);
   });
 }
 

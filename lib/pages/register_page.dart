@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/common/defaultData.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -106,9 +107,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                         email: email, password: password)
                                     .then((userCredential) {
                                   var defaultUserName = 'user-$email';
-                                  var defaultAvatar =
-                                      'https://avatars.githubusercontent.com/u/52821367?v=4';
-                                  var defaultSuggest = "There's nothing here";
 
                                   FirebaseAuth.instance.currentUser!
                                       .updateDisplayName(defaultUserName);
@@ -135,7 +133,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       .set(data);
                                   context
                                       .read<CurrentUser>()
-                                      .setCurrentUser(MyUser.fromJson(data));
+                                      .setCurrentUser(data);
                                   showMessage(
                                       context: context,
                                       title:

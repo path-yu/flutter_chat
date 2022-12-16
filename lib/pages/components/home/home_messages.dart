@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -14,6 +15,14 @@ class HomeMessages extends StatefulWidget {
 
 class _HomeMessagesState extends State<HomeMessages> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,11 +39,10 @@ class _HomeMessagesState extends State<HomeMessages> {
             child: Container(
               margin: EdgeInsets.all(ScreenUtil().setWidth(10)),
               child: ClipOval(
-                child: Image.network(
-                  context.watch<CurrentUser>().value!.photoURL,
-                  fit: BoxFit.fill,
-                  height: ScreenUtil().setHeight(40),
-                ),
+                child: buildBaseImage(
+                    width: ScreenUtil().setWidth(40),
+                    height: ScreenUtil().setHeight(40),
+                    url: context.watch<CurrentUser>().value['photoURL']),
               ),
             ),
           )),

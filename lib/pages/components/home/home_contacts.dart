@@ -2,6 +2,7 @@ import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -55,6 +56,13 @@ class _HomeContactsState extends State<HomeContacts> {
   }
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -78,7 +86,7 @@ class _HomeContactsState extends State<HomeContacts> {
               margin: EdgeInsets.all(ScreenUtil().setWidth(10)),
               child: ClipOval(
                 child: Image.network(
-                  context.watch<CurrentUser>().value!.photoURL,
+                  context.watch<CurrentUser>().value['photoURL'],
                   fit: BoxFit.fill,
                   height: ScreenUtil().setHeight(40),
                 ),
@@ -125,13 +133,12 @@ class _HomeContactsState extends State<HomeContacts> {
                               onTap: () {},
                               contentPadding:
                                   EdgeInsets.all(ScreenUtil().setWidth(10)),
-                              leading: ClipRect(
-                                child: OctoImage(
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  image: CachedNetworkImageProvider(
-                                      contactList[index]['photoURL']),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(5.0),
+                                child: buildBaseImage(
+                                  width: ScreenUtil().setWidth(40),
+                                  height: ScreenUtil().setHeight(40),
+                                  url: contactList[index]['photoURL'],
                                 ),
                               ),
                               title: buildOneLineText(

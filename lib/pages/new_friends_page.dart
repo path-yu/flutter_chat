@@ -28,9 +28,39 @@ class NewFriendsPage extends HookWidget {
           .collection(NOTIFICATION)
           .where('email', isEqualTo: currentUser.email)
           .get();
-      var result = [...queryAddMy.docs, ...queryMyRequest.docs]
-          .map((e) => {'id': e.id, ...e.data()})
+      List<Map<String, dynamic>> result = [
+        ...queryAddMy.docs,
+        ...queryMyRequest.docs
+      ]
+          .map((e) => {
+                'id': e.id,
+                'isMyRequest': currentUser.email == e.data()['email'],
+                ...e.data()
+              })
           .toList();
+      var userData = await db
+          .collection(UsersDbKey)
+          .where('email',
+              whereIn: result.map((e) {
+                if (e['isMyRequest'] != true) {
+                  return e['email'];
+                } else {
+                  return e['targetEmail'];
+                }
+              }).toList())
+          .get();
+      result = result.asMap().entries.map((entry) {
+        int index = entry.key;
+        var data = {...entry.value};
+        if (data['isMyRequest']) {
+          data['userName'] = getCurrentUser().displayName;
+          data['photoURL'] = getCurrentUser().photoURL;
+        } else {
+          data['userName'] = userData.docs[index].data()['userName'];
+          data['photoURL'] = userData.docs[index].data()['photoURL'];
+        }
+        return data;
+      }).toList();
       listData.value = result;
       loading.value = false;
     }
@@ -100,14 +130,10 @@ class NewFriendsPage extends HookWidget {
                           : ListView.separated(
                               itemBuilder: (context, index) {
                                 var item = listData.value[index];
-                                var isMyRequest =
-                                    currentUser.email == item['email'];
-                                var photoURL = isMyRequest
-                                    ? item['targetUserPhotoURL']
-                                    : item['photoURL'];
-                                var userName = isMyRequest
-                                    ? item['targetUserName']
-                                    : item['userName'];
+                                var isMyRequest = item['isMyRequest'];
+                                var photoURL = item['photoURL'];
+                                var userName = item['userName'];
+
                                 var remarks = item['remarks'];
                                 String status = item['status'];
                                 return ListTile(
@@ -128,10 +154,20 @@ class NewFriendsPage extends HookWidget {
                                       remarks,
                                     ),
                                     trailing: isMyRequest
-                                        ? Text(
-                                            statusMapText[status]!,
-                                            style: subtitleTextStyle,
-                                          )
+                                        ? status == 'success'
+                                            ? Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(Icons.done),
+                                                  SizedBox(
+                                                    width: ScreenUtil()
+                                                        .setWidth(5),
+                                                  ),
+                                                  Text(statusMapText[status]!,
+                                                      style: subtitleTextStyle)
+                                                ],
+                                              )
+                                            : Text(statusMapText[status]!)
                                         : status == 'pending'
                                             ? Row(
                                                 mainAxisSize: MainAxisSize.min,
@@ -150,8 +186,7 @@ class NewFriendsPage extends HookWidget {
                                                           const Text('reject'))
                                                 ],
                                               )
-                                            : Text(statusMapText[status]!,
-                                                style: subtitleTextStyle));
+                                            : Text(statusMapText[status]!));
                               },
                               separatorBuilder:
                                   (BuildContext context, int index) {

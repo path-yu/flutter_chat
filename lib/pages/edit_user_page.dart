@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/base_text_form_filed.dart';
+import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -27,6 +28,8 @@ class _EditUserPageState extends State<EditUserPage> {
   String avatar = '';
   String userName = '';
   String suggest = '';
+  bool saveLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -36,11 +39,13 @@ class _EditUserPageState extends State<EditUserPage> {
   }
 
   void handleOpenFilePickerClick() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    final ImagePicker _picker = ImagePicker();
+    // Pick an image
+    final XFile? result = await _picker.pickImage(source: ImageSource.gallery);
 
     if (result != null) {
-      Uint8List fileBytes = result.files.first.bytes!;
-      String fileName = result.files.first.name;
+      Uint8List fileBytes = await result.readAsBytes();
+      String fileName = result.name;
 
       final mountainsRef = FirebaseStorage.instance.ref('uploads/$fileName');
 
@@ -76,10 +81,10 @@ class _EditUserPageState extends State<EditUserPage> {
   @override
   Widget build(BuildContext context) {
     if (userName.isEmpty) {
-      userName = context.read<CurrentUser>().value!.userName;
+      userName = context.read<CurrentUser>().value['userName'];
     }
     if (suggest.isEmpty) {
-      suggest = context.read<CurrentUser>().value!.suggest;
+      suggest = context.read<CurrentUser>().value['suggest'];
     }
     return HideKeyboard(
       child: Scaffold(
@@ -97,6 +102,7 @@ class _EditUserPageState extends State<EditUserPage> {
               'photoURL': avatar
             }).then((value) {
               showMessage(context: context, title: 'update completed');
+              Navigator.pop(context);
             });
           }, size: ScreenUtil().setSp(20))
         ]),
@@ -113,21 +119,21 @@ class _EditUserPageState extends State<EditUserPage> {
                         onTap: handleOpenFilePickerClick,
                         child: Stack(children: [
                           Positioned(
-                              child: SizedBox(
-                            width: ScreenUtil().setWidth(60),
-                            height: ScreenUtil().setHeight(60),
-                            child: CircleAvatar(
-                              backgroundImage: NetworkImage(avatar),
+                            child: ClipOval(
+                              child: buildBaseImage(
+                                  width: ScreenUtil().setWidth(60),
+                                  height: ScreenUtil().setHeight(60),
+                                  url: avatar),
                             ),
-                          )),
+                          ),
                           Positioned(
                               child: SizedBox(
                             width: ScreenUtil().setWidth(60),
                             height: ScreenUtil().setHeight(60),
-                            child: CircleAvatar(
+                            child: const CircleAvatar(
                               backgroundColor: Color.fromRGBO(0, 0, 0, .5),
                               child: Center(
-                                child: const Icon(Icons.camera_alt_outlined),
+                                child: Icon(Icons.camera_alt_outlined),
                               ),
                             ),
                           ))
@@ -137,7 +143,7 @@ class _EditUserPageState extends State<EditUserPage> {
                   )),
               BaseTextFormFiled(
                 labelText: 'User nickname',
-                initialValue: context.read<CurrentUser>().value!.userName,
+                initialValue: context.read<CurrentUser>().value['userName'],
                 onChanged: (value) {
                   userName = value!;
                 },
@@ -146,7 +152,7 @@ class _EditUserPageState extends State<EditUserPage> {
                 labelText: 'suggest',
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
-                initialValue: context.read<CurrentUser>().value!.suggest,
+                initialValue: context.read<CurrentUser>().value['suggest'],
                 onChanged: (value) {
                   suggest = value!;
                 },

@@ -126,9 +126,9 @@ class _AddContactPageState extends State<AddContactPage> {
               FractionallySizedBox(
                 widthFactor: 1,
                 child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (formKey.currentState!.validate()) {
-                        addContactsNotification(email, remarks);
+                        await addContactsNotification(email, remarks, context);
                       }
                     },
                     child: const Text('confirm')),

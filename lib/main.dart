@@ -19,20 +19,9 @@ void main() async {
   );
   var currentUser = CurrentUser();
   if (FirebaseAuth.instance.currentUser != null) {
-    var user = await searchUserByEmail(getCurrentUser().email!);
-    currentUser.initData(MyUser.fromJson(user.docs[0].data()));
-  } else {
-    // default data
-    currentUser.initData(MyUser.fromJson({
-      'email': '',
-      'createTime': DateTime.now().millisecondsSinceEpoch.toString(),
-      'lastLoginTime': DateTime.now().millisecondsSinceEpoch.toString(),
-      'suggest': '',
-      'online': true,
-      'contacts': [],
-      'uid': '',
-      'userName': ''
-    }));
+    searchUserByEmail(getCurrentUser().email!).then((user) {
+      currentUser.setCurrentUser(user.docs[0].data());
+    });
   }
   runApp(MultiProvider(
     providers: [

@@ -14,7 +14,7 @@ final baseRoutes = {
   '/register': (BuildContext context) => const RegisterPage(),
 };
 final authRoutes = {
-  '/': (BuildContext context) => HomePage(),
+  '/': (BuildContext context) => const HomePage(),
   '/chat': (BuildContext context) => const ChatPage(),
   '/search': (BuildContext context) => const SearchPage(),
   '/addContact': (BuildContext context) => const AddContactPage(),
