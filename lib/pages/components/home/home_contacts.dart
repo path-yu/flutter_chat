@@ -1,13 +1,12 @@
 import 'package:badges/badges.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:octo_image/octo_image.dart';
 import 'package:provider/provider.dart';
 
 class HomeContacts extends StatefulWidget {
@@ -26,6 +25,8 @@ class _HomeContactsState extends State<HomeContacts> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> contactList = [];
   bool loading = true;
+  bool callTapLock = false;
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +43,8 @@ class _HomeContactsState extends State<HomeContacts> {
           });
         }
         var contactsList = await searchUserByEmails(contacts);
-        var data = mapQuerySnapshotData(contactsList);
+        var data = mapQuerySnapshotData(contactsList,
+            otherValue: {'hasChats': false, 'chatId': ''});
         setState(() {
           contactList = data;
           loading = false;
@@ -60,6 +62,55 @@ class _HomeContactsState extends State<HomeContacts> {
     if (mounted) {
       super.setState(fn);
     }
+  }
+
+  void handleContactItemClick(int index) {
+    if (callTapLock) {
+      return;
+    }
+    var item = contactList[index];
+    if (item['hasChats']) {
+      toChatPage(item['chatId']);
+    } else {
+      callTapLock = true;
+      EasyLoading.show(status: 'loading...');
+      // search chat
+      searchChat(index);
+    }
+  }
+
+  void toChatPage(String chatId) {
+    Navigator.pushNamed(context, '/chat', arguments: {'id': chatId});
+  }
+
+  void searchChat(int index) {
+    var cur = getCurrentUser();
+    var item = contactList[index];
+
+    queryMyChat(cur.uid, item['uid']).get().then((value) {
+      if (value.docs.isNotEmpty) {
+        setState(() {
+          var id = value.docs[0].id;
+          contactList[index]['hasChats'] = true;
+          contactList[index]['chatId'] = id;
+          toChatPage(id);
+        });
+        EasyLoading.dismiss();
+        callTapLock = false;
+      }
+    });
+    queryMyChat(item['uid'], cur.uid).get().then((value) {
+      if (value.docs.isNotEmpty) {
+        setState(() {
+          var id = value.docs[0].id;
+          contactList[index]['hasChats'] = true;
+          contactList[index]['chatId'] = id;
+          toChatPage(id);
+        });
+        EasyLoading.dismiss();
+        callTapLock = false;
+      }
+    });
   }
 
   @override
@@ -130,7 +181,7 @@ class _HomeContactsState extends State<HomeContacts> {
                       : ListView.separated(
                           itemBuilder: ((context, index) {
                             return ListTile(
-                              onTap: () {},
+                              onTap: () => handleContactItemClick(index),
                               contentPadding:
                                   EdgeInsets.all(ScreenUtil().setWidth(10)),
                               leading: ClipRRect(

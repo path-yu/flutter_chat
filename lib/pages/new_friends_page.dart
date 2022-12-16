@@ -38,6 +38,11 @@ class NewFriendsPage extends HookWidget {
                 ...e.data()
               })
           .toList();
+      if (result.isEmpty) {
+        listData.value = result;
+        loading.value = false;
+        return;
+      }
       var userData = await db
           .collection(UsersDbKey)
           .where('email',
@@ -95,6 +100,8 @@ class NewFriendsPage extends HookWidget {
             .update({
           'contacts': FieldValue.arrayUnion([currentUser.email])
         });
+        // add chat
+        addChat(listDataItem['uid']);
       });
     }
 

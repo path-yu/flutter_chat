@@ -125,7 +125,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                         DateTime.now().millisecondsSinceEpoch,
                                     'online': true,
                                     'userName': defaultUserName,
-                                    'uid': userCredential.user!.uid
+                                    'uid': userCredential.user!.uid,
+                                    'chats': []
                                   };
                                   db
                                       .collection(UsersDbKey)
@@ -145,7 +146,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                     Navigator.pushNamed(context, '/');
                                   });
                                 }).onError((error, stackTrace) {
-                                  print(error);
                                   showMessage(
                                       context: context,
                                       title: error.toString(),

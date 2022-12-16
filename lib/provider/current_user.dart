@@ -11,7 +11,8 @@ class CurrentUser with ChangeNotifier {
     'contacts': [],
     'uid': '',
     'userName': '',
-    'photoURL': defaultAvatar
+    'photoURL': defaultAvatar,
+    'chats': []
   };
 
   Map<String, dynamic> get value => _value;

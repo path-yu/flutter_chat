@@ -33,8 +33,10 @@ class _EditUserPageState extends State<EditUserPage> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      avatar = getCurrentUser().photoURL!;
+    Future.delayed(const Duration(milliseconds: 300)).then((value) {
+      setState(() {
+        avatar = context.read<CurrentUser>().value['photoURL'];
+      });
     });
   }
 

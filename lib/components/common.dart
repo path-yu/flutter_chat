@@ -30,11 +30,12 @@ Widget buildIcon(IconData icon) {
 }
 
 Widget buildIconButton(IconData icon, Function()? onPressed,
-    {double size = 16}) {
+    {double size = 16, Color? iconColor}) {
   return IconButton(
     icon: Icon(
       icon,
       size: size,
+      color: iconColor,
     ),
     splashColor: Colors.transparent,
     highlightColor: Colors.transparent,

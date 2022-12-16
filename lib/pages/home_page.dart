@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/components/common.dart';
+import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
@@ -20,16 +21,31 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
   int newFriendsBadgeCount = 0;
-
+  int newMessageCount = 0;
   void handleOnTap(int? index) {
     setState(() {
       currentIndex = index!;
     });
-    var currentUser = FirebaseAuth.instance.currentUser!;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    db
+        .collection(UsersDbKey)
+        .doc(getCurrentUser().uid)
+        .snapshots()
+        .listen((doc) {
+      if (doc.exists) {
+        var data = doc.data()!;
+        context.read<CurrentUser>().setCurrentUser(data);
+        eventBus.fire(UserChangeEvent(data));
+      }
+    });
     // listener add contact notification
     db
         .collection(NOTIFICATION)
-        .where('targetEmail', isEqualTo: currentUser.email)
+        .where('targetEmail', isEqualTo: getCurrentUser().email)
         .where('type', isEqualTo: 'addContact')
         .snapshots()
         .listen((querySnapshot) {
@@ -45,23 +61,6 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
-    db
-        .collection(UsersDbKey)
-        .doc(getCurrentUser().uid)
-        .snapshots()
-        .listen((doc) {
-      if (doc.exists) {
-        var data = doc.data()!;
-        context.read<CurrentUser>().setCurrentUser(data);
-      }
-    });
-  }
-
-  @override
-  void setState(fn) {
-    if (mounted) {
-      super.setState(fn);
-    }
   }
 
   @override
@@ -81,7 +80,6 @@ class _HomePageState extends State<HomePage> {
               : const Icon(Icons.people),
           label: 'Contacts'),
     ];
-    Widget currentPage;
 
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
@@ -94,7 +92,7 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          const HomeMessages(),
+          HomeMessages(),
           HomeContacts(
             hasNewFriends: newFriendsBadgeCount != 0,
           ),
