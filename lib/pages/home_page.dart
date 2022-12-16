@@ -1,14 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/color.dart';
-import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter_chat/provider/current_user.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -92,7 +89,7 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          HomeMessages(),
+          const HomeMessages(),
           HomeContacts(
             hasNewFriends: newFriendsBadgeCount != 0,
           ),

@@ -43,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
                       type: index.isOdd
                           ? BubbleType.receiverBubble
                           : BubbleType.sendBubble),
-                  backGroundColor: Color(0xffE7E7ED),
+                  backGroundColor: const Color(0xffE7E7ED),
                   child: Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.7,
@@ -70,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       if (index.isOdd)
                         Transform.translate(
-                          offset: Offset(5, 0),
+                          offset: const Offset(5, 0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -88,7 +88,7 @@ class _ChatPageState extends State<ChatPage> {
                         )
                       else
                         Transform.translate(
-                          offset: Offset(-5, 0),
+                          offset: const Offset(-5, 0),
                           child: ele,
                         ),
                       if (index.isEven)

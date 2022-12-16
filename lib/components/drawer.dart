@@ -18,7 +18,7 @@ class DrawerHead extends StatelessWidget {
             // UserAccountsDrawerHeader 可以设置用户头像、用户名、Email 等信息，显示一个符合纸墨设计规范的 drawer header。
             // 标题
             accountName: Text(context.watch<CurrentUser>().value['userName'],
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             // 副标题
             accountEmail: Text(context.watch<CurrentUser>().value['suggest']),
             // Emails
