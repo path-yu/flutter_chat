@@ -7,3 +7,9 @@ class UserChangeEvent {
 
   UserChangeEvent(this.user);
 }
+
+class ChatsChangeEvent {
+  List<dynamic> value;
+
+  ChatsChangeEvent(this.value);
+}

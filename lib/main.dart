@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
               navigatorKey: navigatorKey, // set property
               debugShowCheckedModeBanner: false,
               routes: baseRoutes,
-              initialRoute: '/chat',
+              initialRoute: '/',
               builder: EasyLoading.init(),
               theme: ThemeData(
                 // is not restarted.

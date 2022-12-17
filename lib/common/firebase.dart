@@ -99,10 +99,10 @@ void addChat(String targetUid,
   db.collection(ChatsKey).add({
     'messages': [
       {
-        'uid': currentUser.uid,
-        'targetUid': targetUid,
         'content': content,
         'type': 'text',
+        'uid': currentUser.uid,
+        'targetUid': targetUid,
         'createTime': DateTime.now().millisecondsSinceEpoch
       }
     ],
@@ -126,8 +126,8 @@ Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmail(
   return db.collection(UsersDbKey).where('email', isEqualTo: email).get();
 }
 
-Future<QuerySnapshot<Map<String, dynamic>>> searchUserByUids(List ids) async {
-  return db.collection(UsersDbKey).where('uid', whereIn: ids).get();
+Future<QuerySnapshot<Map<String, dynamic>>> searchUserByUid(String id) async {
+  return db.collection(UsersDbKey).where('uid', isEqualTo: id).get();
 }
 
 Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmails(List emails) {
@@ -178,30 +178,35 @@ queryChats(List ids) async {
   return handleChatData(chats);
 }
 
+void addMessage(String id, Map message) {
+  db.collection(ChatsKey).doc(id).update({
+    'messages': FieldValue.arrayUnion([message])
+  });
+}
+
 Future<List> handleChatData(QuerySnapshot<Map<String, dynamic>> chats) async {
   var result = [];
   var currentUser = getCurrentUser();
   for (var e in chats.docs) {
     var data = e.data();
-    var uids = [data['uid'], data['targetUid']];
-    // search userInfo
-    var users = await searchUserByUids(uids);
-    data['userName'] = users.docs[0].data()['userName'];
-    data['userPhotoURL'] = users.docs[0].data()['photoURL'];
-    data['targetUserName'] = users.docs[1].data()['userName'];
-    data['targetUserPhotoURL'] = users.docs[1].data()['photoURL'];
+    var user = await searchUserByUid(currentUser.uid);
+    var targetUser = await searchUserByUid(
+        currentUser.uid == data['targetUid'] ? data['uid'] : data['targetUid']);
+    var userData = user.docs[0].data();
+    var targetUserData = targetUser.docs[0].data();
+    data['userName'] = userData['userName'];
+    data['chatId'] = e.id;
+    data['userPhotoURL'] = userData['photoURL'];
+    data['targetUserName'] = targetUserData['userName'];
+    data['targetUserPhotoURL'] = targetUserData['photoURL'];
     data['isMyRequest'] = currentUser.uid == data['uid'];
-    data['showUserName'] =
-        data['isMyRequest'] ? data['userName'] : data['targetUserName'];
-    data['showAvatar'] =
-        data['isMyRequest'] ? data['userPhotoURL'] : data['targetUserPhotoURL'];
     data['showUpdateTime'] = formatDate(data['updateTime']);
+    data['replyUid'] = data['isMyRequest'] ? data['targetUid'] : data['uid'];
     List messages = data['messages'];
     data['messages'] = messages.map((message) {
       bool isMyRequest = currentUser.uid == message['uid'];
       return {
         ...message,
-        'chatId': e.id,
         'isMyRequest': isMyRequest,
         'userName': isMyRequest ? data['userName'] : data['targetUserName'],
         'avatar':
@@ -209,9 +214,11 @@ Future<List> handleChatData(QuerySnapshot<Map<String, dynamic>> chats) async {
         'showCreateTime': formatMessageDate(message['createTime'])
       };
     }).toList();
-    var lastMessage = messages[messages.length - 1];
+    var lastMessage = data['messages'][messages.length - 1];
     data['lastMessage'] =
         lastMessage['type'] == 'pic' ? '[picture]' : lastMessage['content'];
+    data['showAvatar'] = lastMessage['avatar'];
+    data['showUserName'] = lastMessage['userName'];
     result.add(data);
   }
   return result;

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
@@ -20,6 +23,9 @@ class _HomeMessagesState extends State<HomeMessages> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List chatList = [];
   bool loading = false;
+  List chatIdList = [];
+
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? unSubscribe;
   @override
   void setState(fn) {
     if (mounted) {
@@ -40,15 +46,27 @@ class _HomeMessagesState extends State<HomeMessages> {
         return;
       }
       if (chats.isNotEmpty) {
+        if (unSubscribe != null) {
+          unSubscribe!.cancel();
+        }
         setState(() => loading = true);
-        List result = await queryChats(chats);
-        setState(() {
-          loading = false;
-          chatList = result;
+        unSubscribe = db
+            .collection(ChatsKey)
+            .where('id', whereIn: chats)
+            .snapshots()
+            .listen((event) async {
+          var data = await handleChatData(event);
+          setState(() {
+            loading = false;
+            chatList = data;
+            eventBus.fire(ChatsChangeEvent(data));
+          });
         });
+
         // search userInfo and targetUserInfo
       }
     });
+    // listen message
   }
 
   @override
@@ -87,7 +105,7 @@ class _HomeMessagesState extends State<HomeMessages> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => ChatPage(
-                              parentMessageList: item['messages'],
+                              parentChatData: item,
                             ),
                           ),
                         );
