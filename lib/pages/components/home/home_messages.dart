@@ -11,6 +11,7 @@ import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMessages extends StatefulWidget {
   const HomeMessages({super.key});
@@ -62,8 +63,6 @@ class _HomeMessagesState extends State<HomeMessages> {
             eventBus.fire(ChatsChangeEvent(data));
           });
         });
-
-        // search userInfo and targetUserInfo
       }
     });
     // listen message
@@ -76,7 +75,7 @@ class _HomeMessagesState extends State<HomeMessages> {
       drawer: DrawerHead(
         scaffoldKey: _scaffoldKey,
       ),
-      appBar: buildAppBar('Chat', context,
+      appBar: buildAppBar('Messages', context,
           showBackButton: false,
           leading: GestureDetector(
             onTap: () {
@@ -101,14 +100,20 @@ class _HomeMessagesState extends State<HomeMessages> {
                     var item = chatList[index];
                     return ListTile(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatPage(
-                              parentChatData: item,
+                        // Obtain shared preferences.
+                        SharedPreferences.getInstance().then((prefs) {
+                          var offset = prefs.getString(item['id']);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatPage(
+                                parentChatData: item,
+                                initialScrollOffset:
+                                    offset != null ? double.parse(offset) : 0,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        });
                       },
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(5.0),

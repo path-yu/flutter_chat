@@ -4,10 +4,13 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
+import 'package:flutter_chat/eventBus/index.dart';
+import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeContacts extends StatefulWidget {
   final bool? hasNewFriends;
@@ -24,36 +27,31 @@ class _HomeContactsState extends State<HomeContacts> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> contactList = [];
+  List<dynamic> chats = [];
+
   bool loading = true;
   bool callTapLock = false;
 
   @override
   void initState() {
     super.initState();
-    db
-        .collection(UsersDbKey)
-        .doc(getCurrentUser().uid)
-        .snapshots()
-        .listen((doc) async {
-      if (doc.data() != null) {
-        var contacts = doc.data()!['contacts'];
-        if (contacts.length == 0) {
-          return setState(() {
-            loading = false;
-          });
-        }
-        var contactsList = await searchUserByEmails(contacts);
-        var data = mapQuerySnapshotData(contactsList,
-            otherValue: {'hasChats': false, 'chatId': ''});
-        setState(() {
-          contactList = data;
-          loading = false;
-        });
-      } else {
-        setState(() {
+    eventBus.on<UserChangeEvent>().listen((event) async {
+      var contacts = event.user['contacts'];
+      if (contacts.length == 0) {
+        return setState(() {
           loading = false;
         });
       }
+      var contactsList = await searchUserByEmails(contacts);
+      var data = mapQuerySnapshotData(contactsList,
+          otherValue: {'hasChats': false, 'chatId': ''});
+      setState(() {
+        contactList = data;
+        loading = false;
+      });
+    });
+    eventBus.on<ChatsChangeEvent>().listen((event) {
+      chats = event.value;
     });
   }
 
@@ -80,37 +78,67 @@ class _HomeContactsState extends State<HomeContacts> {
   }
 
   void toChatPage(String chatId) {
-    Navigator.pushNamed(context, '/chat', arguments: {'id': chatId});
+    SharedPreferences.getInstance().then((prefs) {
+      var offset = prefs.getString(chatId);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatPage(
+            parentChatData: getChatDataById(chats, chatId),
+            initialScrollOffset: offset != null ? double.parse(offset) : 0,
+          ),
+        ),
+      );
+    });
   }
 
-  void searchChat(int index) {
+  void searchChat(int index) async {
     var cur = getCurrentUser();
     var item = contactList[index];
 
-    queryMyChat(cur.uid, item['uid']).get().then((value) {
-      if (value.docs.isNotEmpty) {
-        setState(() {
-          var id = value.docs[0].id;
+    var myChat = await queryMyChat(cur.uid, item['uid']).get();
+    if (myChat.docs.isNotEmpty) {
+      setState(() {
+        var id = myChat.docs[0].id;
+        contactList[index]['hasChats'] = true;
+        contactList[index]['chatId'] = id;
+        toChatPage(id);
+      });
+      EasyLoading.dismiss();
+      callTapLock = false;
+    }
+    var toMyChat = await queryMyChat(item['uid'], cur.uid).get();
+    if (toMyChat.docs.isNotEmpty) {
+      setState(() {
+        var id = toMyChat.docs[0].id;
+        if (id.isEmpty) {
           contactList[index]['hasChats'] = true;
-          contactList[index]['chatId'] = id;
-          toChatPage(id);
-        });
+        }
+        contactList[index]['chatId'] = id;
+        toChatPage(id);
+      });
+      EasyLoading.dismiss();
+      callTapLock = false;
+    }
+    // create new chat
+    if (contactList[index]['chatId'].isEmpty) {
+      addNewChat(contactList[index]['uid']).then((value) {
         EasyLoading.dismiss();
-        callTapLock = false;
-      }
-    });
-    queryMyChat(item['uid'], cur.uid).get().then((value) {
-      if (value.docs.isNotEmpty) {
-        setState(() {
-          var id = value.docs[0].id;
-          contactList[index]['hasChats'] = true;
-          contactList[index]['chatId'] = id;
-          toChatPage(id);
-        });
-        EasyLoading.dismiss();
-        callTapLock = false;
-      }
-    });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatPage(
+              parentChatData: {
+                'chatId': value,
+                'messages': const [],
+                'replyUid': contactList[index]['uid']
+              },
+              initialScrollOffset: 0,
+            ),
+          ),
+        );
+      });
+    }
   }
 
   @override

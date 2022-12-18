@@ -67,7 +67,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '928535285999',
     projectId: 'chat-fe875',
     storageBucket: 'chat-fe875.appspot.com',
-    iosClientId: '928535285999-4nops9nmapsplpp9relpo0vuthpc4h0u.apps.googleusercontent.com',
+    iosClientId:
+        '928535285999-4nops9nmapsplpp9relpo0vuthpc4h0u.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterChat',
   );
 
@@ -77,7 +78,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '928535285999',
     projectId: 'chat-fe875',
     storageBucket: 'chat-fe875.appspot.com',
-    iosClientId: '928535285999-4nops9nmapsplpp9relpo0vuthpc4h0u.apps.googleusercontent.com',
+    iosClientId:
+        '928535285999-4nops9nmapsplpp9relpo0vuthpc4h0u.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterChat',
   );
 }

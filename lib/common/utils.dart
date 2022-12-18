@@ -1,20 +1,22 @@
-String formatDate(int timestamp) {
+import 'package:date_format/date_format.dart';
+
+String formatChatDate(int timestamp) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   Duration difference = date.difference(DateTime.now());
   int days = difference.inDays;
   if (date.year == DateTime.now().year) {
     if (days == 0) {
-      return 'today ${date.hour}:${date.minute}';
+      return 'today ${formatDate(date, [HH, ':', nn])}';
     } else if (days == 1) {
       return 'yesterday';
     } else if (days < 7) {
       int weekDay = date.weekday;
       return getWeekday(weekDay);
     } else {
-      return '${date.month}-${date.day}';
+      return formatDate(date, [mm, ':', dd]);
     }
   } else {
-    return '${date.year}${date.month}-${date.day}';
+    return formatDate(date, [yyyy, '-', mm, '-', dd]);
   }
 }
 
@@ -22,11 +24,11 @@ String formatMessageDate(int timestamp) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
   Duration difference = date.difference(DateTime.now());
   int days = difference.inDays;
-  var timeStr = '${date.hour}:${date.minute}:${date.second}';
+  var timeStr = formatDate(date, [HH, ':', nn]);
   if (days == 0) {
     return 'today $timeStr';
   } else {
-    return '${date.year}/${date.month}/${date.day} $timeStr';
+    return '${formatDate(date, [yyyy, '-', mm, '-', dd])} $timeStr';
   }
 }
 

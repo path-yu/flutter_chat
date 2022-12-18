@@ -33,11 +33,9 @@ class _HomePageState extends State<HomePage> {
         .doc(getCurrentUser().uid)
         .snapshots()
         .listen((doc) {
-      if (doc.exists) {
-        var data = doc.data()!;
-        context.read<CurrentUser>().setCurrentUser(data);
-        eventBus.fire(UserChangeEvent(data));
-      }
+      var data = doc.data()!;
+      context.read<CurrentUser>().setCurrentUser(data);
+      eventBus.fire(UserChangeEvent(data));
     });
     // listener add contact notification
     db

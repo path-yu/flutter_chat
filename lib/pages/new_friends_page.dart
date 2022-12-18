@@ -101,7 +101,7 @@ class NewFriendsPage extends HookWidget {
           'contacts': FieldValue.arrayUnion([currentUser.email])
         });
         // add chat
-        addChat(listDataItem['uid']);
+        newFriendAddChat(listDataItem['uid']);
       });
     }
 

@@ -19,11 +19,11 @@ class _SettingPageState extends State<SettingPage> {
           ListTile(
             onTap: () {
               FirebaseAuth.instance.signOut().then((value) {
-                showMessage(context: context, title: 'success');
                 Navigator.popAndPushNamed(context, '/login', arguments: true);
               });
             },
-            title: const Text('Exit login'),
+            leading: const Icon(Icons.logout),
+            title: const Text('logout'),
           )
         ],
       ),

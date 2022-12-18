@@ -93,7 +93,7 @@ addContactsNotification(
   });
 }
 
-void addChat(String targetUid,
+void newFriendAddChat(String targetUid,
     {String content = 'We are already friends, come chat!'}) {
   var currentUser = getCurrentUser();
   db.collection(ChatsKey).add({
@@ -111,14 +111,31 @@ void addChat(String targetUid,
     'createTime': DateTime.now().millisecondsSinceEpoch,
     'updateTime': DateTime.now().millisecondsSinceEpoch
   }).then((value) {
-    db.collection(UsersDbKey).doc(currentUser.uid).update({
-      'chats': FieldValue.arrayUnion([value.id])
-    });
-    db.collection(UsersDbKey).doc(targetUid).update({
-      'chats': FieldValue.arrayUnion([value.id])
-    });
-    db.collection(ChatsKey).doc(value.id).update({'id': value.id});
+    updateUserChatsAndChatsId(currentUser.uid, targetUid, value.id);
   });
+}
+
+void updateUserChatsAndChatsId(String uid, String targetUid, String chatId) {
+  db.collection(UsersDbKey).doc(uid).update({
+    'chats': FieldValue.arrayUnion([chatId])
+  });
+  db.collection(UsersDbKey).doc(targetUid).update({
+    'chats': FieldValue.arrayUnion([chatId])
+  });
+  db.collection(ChatsKey).doc(chatId).update({'id': chatId});
+}
+
+Future<String> addNewChat(String targetUid) async {
+  var currentUser = getCurrentUser();
+  var result = await db.collection(ChatsKey).add({
+    'messages': [],
+    'uid': currentUser.uid,
+    'targetUid': targetUid,
+    'createTime': DateTime.now().millisecondsSinceEpoch,
+    'updateTime': DateTime.now().millisecondsSinceEpoch
+  });
+  updateUserChatsAndChatsId(currentUser.uid, targetUid, result.id);
+  return result.id;
 }
 
 Future<QuerySnapshot<Map<String, dynamic>>> searchUserByEmail(
@@ -180,7 +197,8 @@ queryChats(List ids) async {
 
 void addMessage(String id, Map message) {
   db.collection(ChatsKey).doc(id).update({
-    'messages': FieldValue.arrayUnion([message])
+    'messages': FieldValue.arrayUnion([message]),
+    'updateTime': DateTime.now().millisecondsSinceEpoch
   });
 }
 
@@ -200,7 +218,7 @@ Future<List> handleChatData(QuerySnapshot<Map<String, dynamic>> chats) async {
     data['targetUserName'] = targetUserData['userName'];
     data['targetUserPhotoURL'] = targetUserData['photoURL'];
     data['isMyRequest'] = currentUser.uid == data['uid'];
-    data['showUpdateTime'] = formatDate(data['updateTime']);
+    data['showUpdateTime'] = formatChatDate(data['updateTime']);
     data['replyUid'] = data['isMyRequest'] ? data['targetUid'] : data['uid'];
     List messages = data['messages'];
     data['messages'] = messages.map((message) {
@@ -214,12 +232,27 @@ Future<List> handleChatData(QuerySnapshot<Map<String, dynamic>> chats) async {
         'showCreateTime': formatMessageDate(message['createTime'])
       };
     }).toList();
-    var lastMessage = data['messages'][messages.length - 1];
-    data['lastMessage'] =
-        lastMessage['type'] == 'pic' ? '[picture]' : lastMessage['content'];
-    data['showAvatar'] = lastMessage['avatar'];
-    data['showUserName'] = lastMessage['userName'];
+    if (!data['messages'].isEmpty) {
+      var lastMessage = data['messages'][messages.length - 1];
+      data['lastMessage'] =
+          lastMessage['type'] == 'pic' ? '[picture]' : lastMessage['content'];
+      data['showAvatar'] = lastMessage['avatar'];
+      data['showUserName'] = lastMessage['userName'];
+    } else {
+      data['showAvatar'] = data['isMyRequest']
+          ? data['targetUserPhotoURL']
+          : data['userPhotoURL'];
+      data['showUserName'] =
+          data['isMyRequest'] ? data['targetUserName'] : data['userName'];
+    }
+    data['appbarTitle'] =
+        data['isMyRequest'] ? data['targetUserName'] : data['userName'];
     result.add(data);
   }
   return result;
+}
+
+Map<String, dynamic> getChatDataById(List<dynamic> data, String chatId) {
+  var chatDataIndex = data.indexWhere((element) => element['id'] == chatId);
+  return data[chatDataIndex];
 }
