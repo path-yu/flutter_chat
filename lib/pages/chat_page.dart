@@ -267,8 +267,10 @@ class _ChatPageState extends State<ChatPage> {
               ],
             ),
             Positioned(
-                top: MediaQuery.of(context).size.height - 150,
-                left: MediaQuery.of(context).size.width - 50,
+                top: MediaQuery.of(context).size.height -
+                    ScreenUtil().setWidth(150),
+                left: MediaQuery.of(context).size.width -
+                    ScreenUtil().setWidth(50),
                 child: !showToBottomBtn
                     ? Container()
                     : SizedBox(
