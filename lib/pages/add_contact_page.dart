@@ -129,6 +129,7 @@ class _AddContactPageState extends State<AddContactPage> {
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         await addContactsNotification(email, remarks, context);
+                        Navigator.pop(context);
                       }
                     },
                     child: const Text('confirm')),

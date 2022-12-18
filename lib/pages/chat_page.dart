@@ -50,10 +50,12 @@ class _ChatPageState extends State<ChatPage> {
       // find chat
       var chatDataIndex =
           data.value.indexWhere((element) => element['id'] == chatId);
-      var chatData = data.value[chatDataIndex];
-      setState(() {
-        messageList = chatData['messages'];
-      });
+      if (chatDataIndex != -1) {
+        var chatData = data.value[chatDataIndex];
+        setState(() {
+          messageList = chatData['messages'];
+        });
+      }
     });
     _scrollController.addListener(() {
       if (_scrollController.offset > offset && offset != 0) {
@@ -268,7 +270,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             Positioned(
                 top: MediaQuery.of(context).size.height -
-                    ScreenUtil().setWidth(150),
+                    ScreenUtil().setWidth(180),
                 left: MediaQuery.of(context).size.width -
                     ScreenUtil().setWidth(50),
                 child: !showToBottomBtn

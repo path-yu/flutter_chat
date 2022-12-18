@@ -55,14 +55,16 @@ class NewFriendsPage extends HookWidget {
               }).toList())
           .get();
       result = result.asMap().entries.map((entry) {
-        int index = entry.key;
         var data = {...entry.value};
         if (data['isMyRequest']) {
           data['userName'] = getCurrentUser().displayName;
           data['photoURL'] = getCurrentUser().photoURL;
+          print(data['userName']);
         } else {
-          data['userName'] = userData.docs[index].data()['userName'];
-          data['photoURL'] = userData.docs[index].data()['photoURL'];
+          var targetUserIndex = userData.docs.indexWhere(
+              (element) => element.data()['email'] == data['email']);
+          data['userName'] = userData.docs[targetUserIndex].data()['userName'];
+          data['photoURL'] = userData.docs[targetUserIndex].data()['photoURL'];
         }
         return data;
       }).toList();

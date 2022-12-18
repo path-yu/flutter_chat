@@ -111,9 +111,7 @@ class _HomeContactsState extends State<HomeContacts> {
     if (toMyChat.docs.isNotEmpty) {
       setState(() {
         var id = toMyChat.docs[0].id;
-        if (id.isEmpty) {
-          contactList[index]['hasChats'] = true;
-        }
+        contactList[index]['hasChats'] = true;
         contactList[index]['chatId'] = id;
         toChatPage(id);
       });
