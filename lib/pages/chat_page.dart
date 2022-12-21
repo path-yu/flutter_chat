@@ -42,18 +42,14 @@ class _ChatPageState extends State<ChatPage> {
       return;
     }
     setState(() {
-      messageList = widget.parentChatData!['messages'];
+      messageList = widget.parentChatData!['messageList'];
       chatId = widget.parentChatData!['chatId'];
       replyUid = widget.parentChatData!['replyUid'];
     });
     eventBus.on<ChatsChangeEvent>().listen((data) {
-      // find chat
-      var chatDataIndex =
-          data.value.indexWhere((element) => element['id'] == chatId);
-      if (chatDataIndex != -1) {
-        var chatData = data.value[chatDataIndex];
+      if (data.value[0]['id'] == chatId) {
         setState(() {
-          messageList = chatData['messages'];
+          messageList = data.value[0]['messageList'];
         });
       }
     });
@@ -194,6 +190,7 @@ class _ChatPageState extends State<ChatPage> {
                                   bubble,
                                   Padding(
                                     padding: EdgeInsets.only(
+                                        top: ScreenUtil().setHeight(5),
                                         left: ScreenUtil().setWidth(10)),
                                     child: Text(item['showCreateTime'],
                                         style: TextStyle(
@@ -212,7 +209,7 @@ class _ChatPageState extends State<ChatPage> {
                                   bubble,
                                   Padding(
                                     padding: EdgeInsets.only(
-                                        left: ScreenUtil().setWidth(0)),
+                                        top: ScreenUtil().setHeight(5)),
                                     child: Text(item['showCreateTime'],
                                         style: TextStyle(
                                             color: Colors.black45,
@@ -270,7 +267,7 @@ class _ChatPageState extends State<ChatPage> {
             ),
             Positioned(
                 top: MediaQuery.of(context).size.height -
-                    ScreenUtil().setWidth(180),
+                    ScreenUtil().setWidth(160),
                 left: MediaQuery.of(context).size.width -
                     ScreenUtil().setWidth(50),
                 child: !showToBottomBtn

@@ -52,3 +52,23 @@ String getWeekday(int weekDay) {
       return '未知';
   }
 }
+
+List<List<dynamic>>? sliceArr(List arr, {size = 10}) {
+  List<List<dynamic>> result = [];
+  var startIndex = 0;
+  var length = arr.length;
+  while (true) {
+    var diff = length - startIndex;
+    var end;
+    if (diff > size) {
+      end = startIndex + size;
+    } else {
+      end = startIndex + diff;
+    }
+    startIndex = end;
+    result.add(arr.sublist(startIndex, end));
+    if (startIndex == length) {
+      return result;
+    }
+  }
+}

@@ -23,10 +23,11 @@ class HomeMessages extends StatefulWidget {
 class _HomeMessagesState extends State<HomeMessages> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List chatList = [];
-  bool loading = false;
+  bool loading = true;
   List chatIdList = [];
 
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? unSubscribe;
+  Map<String, StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>?
+      unSubscribeMap = {};
   @override
   void setState(fn) {
     if (mounted) {
@@ -37,35 +38,66 @@ class _HomeMessagesState extends State<HomeMessages> {
   @override
   void initState() {
     super.initState();
-    initData();
+    listenChatData();
+    initGetChatData();
   }
 
-  void initData() {
+  void listenChatData() {
     eventBus.on<UserChangeEvent>().listen((event) async {
       List chats = event.user['chats'];
       if (chats.length == chatList.length) {
         return;
       }
-      if (chats.isNotEmpty) {
-        if (unSubscribe != null) {
-          unSubscribe!.cancel();
+      if (unSubscribeMap!.values.isNotEmpty) {
+        for (var element in unSubscribeMap!.values) {
+          element.cancel();
         }
-        setState(() => loading = true);
-        unSubscribe = db
-            .collection(ChatsKey)
-            .where('id', whereIn: chats)
-            .snapshots()
-            .listen((event) async {
-          var data = await handleChatData(event);
-          setState(() {
-            loading = false;
-            chatList = data;
+      }
+      if (chats.isNotEmpty) {
+        for (var chatId in chats) {
+          unSubscribeMap![chatId] = db
+              .collection(ChatsKey)
+              .where('id', isEqualTo: chatId)
+              .snapshots()
+              .listen((event) async {
+            var data = await handleChatData(event);
+            var index =
+                chatList.indexWhere((ele) => ele['id'] == data[0]['id']);
+            setState(() {
+              if (index == -1) {
+                chatList.add(data[0]);
+              } else {
+                chatList[index] = data[0];
+              }
+            });
             eventBus.fire(ChatsChangeEvent(data));
           });
+        }
+      } else {
+        setState(() {
+          chatList = [];
         });
       }
     });
     // listen message
+  }
+
+  void initGetChatData() async {
+    var user = await searchUserByEmail(getCurrentUser().email!);
+    var userData = user.docs[0].data();
+    List chats = userData['chats'];
+    if (chats.isEmpty) {
+      return setState(() {
+        loading = false;
+        chatList = [];
+      });
+    }
+    var data = await queryChats(chats);
+    setState(() {
+      loading = false;
+      chatList = data;
+      eventBus.fire(ChatsChangeEvent(data));
+    });
   }
 
   @override

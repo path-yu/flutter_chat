@@ -128,8 +128,9 @@ class _HomeContactsState extends State<HomeContacts> {
             builder: (context) => ChatPage(
               parentChatData: {
                 'chatId': value,
-                'messages': const [],
-                'replyUid': contactList[index]['uid']
+                'messageList': const [],
+                'replyUid': contactList[index]['uid'],
+                'appbarTitle': contactList[index]['userName']
               },
               initialScrollOffset: 0,
             ),
