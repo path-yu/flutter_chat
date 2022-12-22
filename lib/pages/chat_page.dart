@@ -47,9 +47,11 @@ class _ChatPageState extends State<ChatPage> {
       replyUid = widget.parentChatData!['replyUid'];
     });
     eventBus.on<ChatsChangeEvent>().listen((data) {
-      if (data.value[0]['id'] == chatId) {
+      var index = data.value.indexWhere((element) => element['id'] == chatId);
+      if (index != -1) {
+        var target = data.value[index];
         setState(() {
-          messageList = data.value[0]['messageList'];
+          messageList = target['messageList'];
         });
       }
     });
@@ -122,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
       _controller.text = '';
     });
     addMessage(chatId, baseMessageData);
-    Future.delayed(const Duration(milliseconds: 100)).then((value) {
+    Future.delayed(const Duration(milliseconds: 150)).then((value) {
       scrollToBottom();
     });
   }
@@ -140,7 +142,17 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return HideKeyboard(
       child: Scaffold(
-        appBar: buildAppBar(widget.parentChatData!['appbarTitle'], context),
+        appBar: buildAppBar(widget.parentChatData!['appbarTitle'], context,
+            actions: [
+              buildIconButton(Icons.menu, () {
+                Navigator.pushNamed(context, '/chatSetting', arguments: {
+                  chatId: chatId,
+                  'messageListKey': replyUid == getCurrentUser().uid
+                      ? 'messages'
+                      : 'targetMessages'
+                });
+              })
+            ]),
         body: Stack(
           children: [
             Column(

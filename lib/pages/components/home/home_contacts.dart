@@ -36,15 +36,28 @@ class _HomeContactsState extends State<HomeContacts> {
   void initState() {
     super.initState();
     eventBus.on<UserChangeEvent>().listen((event) async {
-      var contacts = event.user['contacts'];
-      if (contacts.length == 0) {
+      List contacts = event.user['contacts'];
+      if (contacts.isEmpty) {
         return setState(() {
           loading = false;
         });
       }
-      var contactsList = await searchUserByEmails(contacts);
-      var data = mapQuerySnapshotData(contactsList,
-          otherValue: {'hasChats': false, 'chatId': ''});
+      var data;
+      if (contacts.length < 10) {
+        var contactsList = await searchUserByEmails(contacts);
+        data = mapQuerySnapshotData(contactsList,
+            otherValue: {'hasChats': false, 'chatId': ''});
+      } else {
+        var contactsList = await searchBatchUserByEmails(contacts);
+        var list = [];
+        for (var el in contactsList) {
+          var result = mapQuerySnapshotData(el);
+          for (var element in result) {
+            list.add(element);
+          }
+        }
+        data = list;
+      }
       setState(() {
         contactList = data;
         loading = false;

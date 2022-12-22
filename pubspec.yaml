@@ -30,6 +30,7 @@ dependencies:
   date_format: ^2.0.7
   shared_preferences: ^2.0.15
   extended_image: ^6.3.4
+  adaptive_dialog: ^1.8.0+1
 dev_dependencies:
   flutter_test:
     sdk: flutter

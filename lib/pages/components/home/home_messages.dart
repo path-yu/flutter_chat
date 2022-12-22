@@ -61,16 +61,15 @@ class _HomeMessagesState extends State<HomeMessages> {
               .snapshots()
               .listen((event) async {
             var data = await handleChatData(event);
-            var index =
-                chatList.indexWhere((ele) => ele['id'] == data[0]['id']);
+            var index = chatList.indexWhere((ele) => ele['id'] == data['id']);
             setState(() {
               if (index == -1) {
-                chatList.add(data[0]);
+                chatList.add(data);
               } else {
-                chatList[index] = data[0];
+                chatList[index] = data;
               }
             });
-            eventBus.fire(ChatsChangeEvent(data));
+            eventBus.fire(ChatsChangeEvent(chatList));
           });
         }
       } else {
@@ -95,8 +94,8 @@ class _HomeMessagesState extends State<HomeMessages> {
     var data = await queryChats(chats);
     setState(() {
       loading = false;
-      chatList = data;
-      eventBus.fire(ChatsChangeEvent(data));
+      chatList = [data];
+      eventBus.fire(ChatsChangeEvent(chatList));
     });
   }
 

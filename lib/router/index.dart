@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/pages/add_contact_page.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/chat_setting_page.dart';
 import 'package:flutter_chat/pages/edit_user_page.dart';
 import 'package:flutter_chat/pages/home_page.dart';
 import 'package:flutter_chat/pages/login_page.dart';
@@ -21,6 +22,7 @@ final authRoutes = {
   '/setting': (BuildContext context) => const SettingPage(),
   '/newFriends': (BuildContext context) => const NewFriendsPage(),
   '/editUser': (BuildContext context) => const EditUserPage(),
+  '/chatSetting': (BuildContext context) => const ChatSettingPage(),
 };
 MaterialPageRoute<Widget> getPage(String key, BuildContext context) {
   return MaterialPageRoute<Widget>(builder: (BuildContext context) {
