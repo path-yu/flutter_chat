@@ -5,7 +5,10 @@ import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 
 class ChatSettingPage extends StatefulWidget {
-  const ChatSettingPage({Key? key}) : super(key: key);
+  final String? chatId;
+  final String? messageListKey;
+  const ChatSettingPage({Key? key, this.chatId, this.messageListKey})
+      : super(key: key);
 
   @override
   State<ChatSettingPage> createState() => _ChatSettingPageState();
@@ -14,8 +17,7 @@ class ChatSettingPage extends StatefulWidget {
 class _ChatSettingPageState extends State<ChatSettingPage> {
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args = ModalRoute.of(context)!.settings.arguments;
     return Scaffold(
       appBar: buildAppBar('chat setting', context),
       body: ListView(
@@ -30,9 +32,10 @@ class _ChatSettingPageState extends State<ChatSettingPage> {
                 if (value == OkCancelResult.ok) {
                   db
                       .collection(ChatsKey)
-                      .doc(args['chatId'])
-                      .update({args['messageListKey']: []}).then((value) {
-                    showToast('success');
+                      .doc(widget.chatId!)
+                      .update({widget.messageListKey!: []}).then((value) {
+                    Navigator.pop(context);
+                    showMessage(context: context, title: 'success');
                   });
                 }
               });

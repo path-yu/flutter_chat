@@ -20,7 +20,6 @@ addContactsNotification(
   if (email == currentUser.email) {
     return showMessage(
         context: navigatorKey.currentState!.context,
-        type: 'warning',
         title: 'cannot add itself');
   }
   var data = {
@@ -39,7 +38,6 @@ addContactsNotification(
   if (query.docs.isEmpty) {
     return showMessage(
         context: navigatorKey.currentState!.context,
-        type: 'warning',
         title: 'User does not exist');
   }
   // Is already a friend
@@ -51,7 +49,6 @@ addContactsNotification(
   if (queryContact.docs.isNotEmpty) {
     return showMessage(
         context: navigatorKey.currentState!.context,
-        type: 'warning',
         title: 'Is already a friend');
   }
   var notificationCollection = db.collection(NOTIFICATION);
@@ -71,13 +68,11 @@ addContactsNotification(
   if (hasAddNotificationData.docs.isNotEmpty) {
     return showMessage(
         context: navigatorKey.currentState!.context,
-        type: 'warning',
         title: 'can only be added one way');
   }
   if (hasNotificationData.docs.isNotEmpty) {
     return showMessage(
         context: navigatorKey.currentState!.context,
-        type: 'warning',
         title: 'You have already sent an in invitation!');
   }
   db.collection(NOTIFICATION).add(data).then((value) {
@@ -86,9 +81,7 @@ addContactsNotification(
         title: 'success, please wait');
   }).catchError((err) {
     showMessage(
-        context: navigatorKey.currentState!.context,
-        type: 'danger',
-        title: err.toString());
+        context: navigatorKey.currentState!.context, title: err.toString());
     Navigator.pop(context);
   });
 }

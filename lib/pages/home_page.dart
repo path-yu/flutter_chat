@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/color.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
+import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +18,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int currentIndex = 0;
   int newFriendsBadgeCount = 0;
   int newMessageCount = 0;
@@ -56,6 +59,14 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+
+    window.onPlatformBrightnessChanged = () {
+      if (context.read<CurrentBrightness>().brightness == 'system') {
+        context
+            .read<CurrentBrightness>()
+            .changeSystemBrightness(window.platformBrightness);
+      }
+    };
   }
 
   @override

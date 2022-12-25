@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/common/upload_img.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
+import 'package:flutter_chat/pages/chat_setting_page.dart';
+import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chat_bubble/bubble_type.dart';
@@ -32,6 +33,7 @@ class _ChatPageState extends State<ChatPage> {
   String imgUrl = '';
   double offset = 0;
   bool showToBottomBtn = false;
+  bool showSendBtn = false;
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -80,6 +82,15 @@ class _ChatPageState extends State<ChatPage> {
     });
     WidgetsBinding.instance.addPostFrameCallback(
         (_) => _scrollController.jumpTo(widget.initialScrollOffset!));
+    initListenerMessage();
+  }
+
+  void initListenerMessage() {
+    _controller.addListener(() {
+      setState(() {
+        showSendBtn = _controller.text.trim().isNotEmpty;
+      });
+    });
   }
 
   @override
@@ -88,6 +99,7 @@ class _ChatPageState extends State<ChatPage> {
       instance.setString(chatId, offset.toString());
     });
     _scrollController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -99,9 +111,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   handSendClick() {
-    if (_controller.text.isEmpty) {
-      return showToast('not empty!');
-    }
     var now = DateTime.now().millisecondsSinceEpoch;
     // add message
     var baseMessageData = {
@@ -145,12 +154,15 @@ class _ChatPageState extends State<ChatPage> {
         appBar: buildAppBar(widget.parentChatData!['appbarTitle'], context,
             actions: [
               buildIconButton(Icons.menu, () {
-                Navigator.pushNamed(context, '/chatSetting', arguments: {
-                  chatId: chatId,
-                  'messageListKey': replyUid == getCurrentUser().uid
-                      ? 'messages'
-                      : 'targetMessages'
-                });
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatSettingPage(
+                          chatId: chatId,
+                          messageListKey: replyUid == getCurrentUser().uid
+                              ? 'messages'
+                              : 'targetMessages'),
+                    ));
               })
             ]),
         body: Stack(
@@ -168,7 +180,6 @@ class _ChatPageState extends State<ChatPage> {
                           type: isMyRequest
                               ? BubbleType.sendBubble
                               : BubbleType.receiverBubble),
-                      backGroundColor: const Color(0xffE7E7ED),
                       child: Container(
                         constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width * 0.7,
@@ -176,7 +187,7 @@ class _ChatPageState extends State<ChatPage> {
                         child: item['type'] == 'text'
                             ? Text(
                                 item['content'],
-                                style: const TextStyle(color: Colors.black),
+                                style: const TextStyle(color: Colors.white),
                               )
                             : buildBaseImage(url: item['content']),
                       ),
@@ -204,10 +215,13 @@ class _ChatPageState extends State<ChatPage> {
                                     padding: EdgeInsets.only(
                                         top: ScreenUtil().setHeight(5),
                                         left: ScreenUtil().setWidth(10)),
-                                    child: Text(item['showCreateTime'],
-                                        style: TextStyle(
-                                            color: Colors.black45,
-                                            fontSize: ScreenUtil().setSp(12))),
+                                    child: Opacity(
+                                      opacity: 0.5,
+                                      child: Text(item['showCreateTime'],
+                                          style: TextStyle(
+                                              fontSize:
+                                                  ScreenUtil().setSp(12))),
+                                    ),
                                   )
                                 ],
                               ),
@@ -222,10 +236,13 @@ class _ChatPageState extends State<ChatPage> {
                                   Padding(
                                     padding: EdgeInsets.only(
                                         top: ScreenUtil().setHeight(5)),
-                                    child: Text(item['showCreateTime'],
-                                        style: TextStyle(
-                                            color: Colors.black45,
-                                            fontSize: ScreenUtil().setSp(12))),
+                                    child: Opacity(
+                                      opacity: 0.5,
+                                      child: Text(item['showCreateTime'],
+                                          style: TextStyle(
+                                              fontSize:
+                                                  ScreenUtil().setSp(12))),
+                                    ),
                                   )
                                 ],
                               ),
@@ -239,41 +256,45 @@ class _ChatPageState extends State<ChatPage> {
                   itemCount: messageList.length,
                 )),
                 Container(
-                    padding: EdgeInsets.all(ScreenUtil().setWidth(5)),
+                    padding: EdgeInsets.symmetric(
+                        vertical: ScreenUtil().setWidth(8),
+                        horizontal: ScreenUtil().setWidth(12)),
                     decoration: BoxDecoration(
                         border: Border(
                       top: BorderSide(
-                          color: const Color(
-                            0xFFDFDFDF,
-                          ),
+                          color: context.read<CurrentBrightness>().isDarkMode
+                              ? Colors.black26
+                              : Color(0xFFDFDFDF),
                           width: ScreenUtil().setWidth(1)),
                     )),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          buildIconButton(Icons.image, () {
-                            pickerImgAndUpload((url) {
-                              imgUrl = url;
-                            });
-                          }, size: 20, iconColor: Colors.blue),
+                          buildIconButton(Icons.image, () {},
+                              size: 20, iconColor: Colors.blue),
 
                           // First child is enter comment text input
                           Expanded(
                             child: TextFormField(
                               autocorrect: false,
                               controller: _controller,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 hintText: 'some message',
+                                suffixIcon: showSendBtn
+                                    ? buildIconButton(Icons.send, handSendClick,
+                                        size: 20, iconColor: Colors.blue)
+                                    : const SizedBox(),
                                 isDense: true,
-                                contentPadding: EdgeInsets.all(10),
-                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.all(10),
+                                fillColor:
+                                    context.read<CurrentBrightness>().isDarkMode
+                                        ? Colors.black26
+                                        : Colors.white,
                                 filled: true, // dont forget this line
                               ),
                             ),
                           ),
                           // Second child is button
-                          buildIconButton(Icons.send, handSendClick,
-                              size: 20, iconColor: Colors.blue),
                         ])),
               ],
             ),

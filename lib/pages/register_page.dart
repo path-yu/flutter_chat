@@ -46,7 +46,6 @@ class _RegisterPageState extends State<RegisterPage> {
         appBar:
             buildAppBar('Welcome to register', context, showBackButton: true),
         body: Container(
-          color: Colors.white54,
           padding: EdgeInsets.all(ScreenUtil().setWidth(20)),
           margin: EdgeInsets.only(top: ScreenUtil().setHeight(20)),
           child: Column(
@@ -69,15 +68,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                   _emailController.clear();
                                 }))
                               : null,
-                          hintText: 'please input your email',
+                          hintText: 'type email',
                           prefixIcon: buildIcon(Icons.email)),
                     ),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
                       validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'please input your password';
+                        if (value!.isEmpty || value.length < 6) {
+                          return 'Password should be at least 6 characters';
                         }
                         return null;
                       },
@@ -87,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   _passwordController.clear();
                                 }))
                               : null,
-                          hintText: 'please input your password',
+                          hintText: 'type password',
                           prefixIcon: buildIcon(Icons.lock)),
                     ),
                   ],
@@ -99,13 +98,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: ElevatedButton(
                       onPressed: loginButtonLoading
                           ? null
-                          : () {
+                          : () async {
                               if (_formKey.currentState!.validate()) {
                                 setState(() => loginButtonLoading = true);
-                                FirebaseAuth.instance
-                                    .createUserWithEmailAndPassword(
-                                        email: email, password: password)
-                                    .then((userCredential) {
+                                try {
+                                  var userCredential = await FirebaseAuth
+                                      .instance
+                                      .createUserWithEmailAndPassword(
+                                          email: email, password: password);
                                   var defaultUserName = 'user-$email';
 
                                   FirebaseAuth.instance.currentUser!
@@ -145,13 +145,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                       .then((value) {
                                     Navigator.pushNamed(context, '/');
                                   });
-                                }).onError((error, stackTrace) {
+                                  setState(() => loginButtonLoading = false);
+                                } on FirebaseException catch (e) {
                                   showMessage(
-                                      context: context,
-                                      title: error.toString(),
-                                      type: 'danger');
-                                }).whenComplete(() => setState(
-                                        () => loginButtonLoading = false));
+                                    context: context,
+                                    title: e.message!,
+                                  );
+                                  setState(() => loginButtonLoading = false);
+                                }
                               }
                             },
                       child: loginButtonLoading

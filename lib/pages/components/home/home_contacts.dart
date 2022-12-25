@@ -51,7 +51,8 @@ class _HomeContactsState extends State<HomeContacts> {
         var contactsList = await searchBatchUserByEmails(contacts);
         var list = [];
         for (var el in contactsList) {
-          var result = mapQuerySnapshotData(el);
+          var result = mapQuerySnapshotData(el,
+              otherValue: {'hasChats': false, 'chatId': ''});
           for (var element in result) {
             list.add(element);
           }

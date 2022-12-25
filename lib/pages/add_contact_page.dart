@@ -26,14 +26,12 @@ class _AddContactPageState extends State<AddContactPage> {
     if (email == FirebaseAuth.instance.currentUser!.email) {
       return showMessage(
           context: navigatorKey.currentState!.context,
-          type: 'warning',
           title: 'cannot add itself');
     }
     // search user
     var query = await searchUserByEmail(email);
     if (query.docs.isEmpty) {
-      showMessage(
-          context: context, title: 'User does not exist', type: 'danger');
+      showMessage(context: context, title: 'User does not exist');
     } else {
       var user = query.docs[0].data();
       setState(() {

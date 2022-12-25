@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 showToast(String message) {
   Fluttertoast.showToast(
       msg: message,
+      fontSize: 16.0,
+      webBgColor: "rgba(0,0,0,.8)",
+      textColor: Colors.white,
+      timeInSecForIosWeb: 2,
       gravity: ToastGravity.CENTER,
-      timeInSecForIosWeb: 1,
-      webPosition: 'center',
-      backgroundColor: const Color.fromRGBO(0, 0, 0, 0.6),
-      fontSize: ScreenUtil().setSp(15));
+      webPosition: 'center');
 }

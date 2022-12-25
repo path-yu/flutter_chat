@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String email = '1974675011@qq.com';
+  String email = '2802872190@qq.com';
   String password = '123456';
   bool loginButtonLoading = false;
 
@@ -61,7 +61,6 @@ class _LoginPageState extends State<LoginPage>
               showBackButton:
                   args != null ? false : Navigator.of(context).canPop()),
           body: Container(
-            color: Colors.white54,
             padding: EdgeInsets.all(ScreenUtil().setWidth(20)),
             margin: EdgeInsets.only(top: ScreenUtil().setHeight(20)),
             child: Column(
@@ -84,15 +83,15 @@ class _LoginPageState extends State<LoginPage>
                                     _emailController.clear();
                                   }))
                                 : null,
-                            hintText: 'please input your email',
+                            hintText: 'type email',
                             prefixIcon: buildIcon(Icons.email)),
                       ),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
                         validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'please input your password';
+                          if (value!.isNotEmpty && value.length < 6) {
+                            return 'Password should be at least 6 characters';
                           }
                           return null;
                         },
@@ -102,7 +101,7 @@ class _LoginPageState extends State<LoginPage>
                                     _passwordController.clear();
                                   }))
                                 : null,
-                            hintText: 'please input your password',
+                            hintText: ' type password',
                             prefixIcon: buildIcon(Icons.lock)),
                       ),
                     ],
@@ -114,24 +113,25 @@ class _LoginPageState extends State<LoginPage>
                     child: ElevatedButton(
                         onPressed: loginButtonLoading
                             ? null
-                            : () {
+                            : () async {
                                 if (_formKey.currentState!.validate()) {
                                   setState(() => loginButtonLoading = true);
-                                  FirebaseAuth.instance
-                                      .signInWithEmailAndPassword(
-                                          email: email, password: password)
-                                      .then((value) {
+                                  try {
+                                    await FirebaseAuth.instance
+                                        .signInWithEmailAndPassword(
+                                            email: email, password: password);
                                     showMessage(
                                         context: context,
                                         title: 'login successful');
                                     Navigator.pushNamed(context, '/');
-                                  }).onError((error, stackTrace) {
+                                  } on FirebaseAuthException catch (e) {
                                     showMessage(
-                                        context: context,
-                                        title: error.toString(),
-                                        type: 'danger');
-                                  }).whenComplete(() => setState(
-                                          () => loginButtonLoading = false));
+                                      context: context,
+                                      title: e.message!,
+                                    );
+                                  }
+                                  setState(() => loginButtonLoading = false);
+                                  setState(() => loginButtonLoading = false);
                                 }
                               },
                         child: loginButtonLoading

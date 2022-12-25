@@ -38,31 +38,9 @@ class DrawerHead extends StatelessWidget {
           ),
           // ListTile是下方的几个可点按List
           ListTile(
-            // List标题
-            title: const Text('details'),
-            leading: const Icon(
-              Icons.favorite, // Icon种类
-              color: Colors.black12, // Icon颜色
-              size: 22.0, // Icon大小
-            ),
-            // 点按时间，这里可以做你想做的事情，如跳转、判断等等
-            // 此处博主只使用了 Navigator.pop(context) 来手动关闭Drawer
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            title: const Text('Favorite'),
-            leading: const Icon(
-              Icons.favorite,
-              color: Colors.black12,
-              size: 22.0,
-            ),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
             title: const Text('Settings'),
             leading: const Icon(
               Icons.settings,
-              color: Colors.black12,
               size: 22.0,
             ),
             onTap: () {
