@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/router/index.dart';
@@ -40,7 +41,6 @@ void main() async {
   ));
   SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    systemNavigationBarColor: Colors.blue,
   );
   SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
 }
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
               builder: EasyLoading.init(),
               theme: ThemeData(
                   // is not restarted.
-                  primarySwatch: Colors.blue,
+                  primarySwatch: primaryColor,
                   brightness: context.watch<CurrentBrightness>().value),
               onGenerateRoute: (RouteSettings settings) {
                 // 检查路由是否需要拦截

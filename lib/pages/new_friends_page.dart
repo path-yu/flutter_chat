@@ -15,6 +15,7 @@ class NewFriendsPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final listData = useState([]);
+    final rawListData = useRef([]);
     final loading = useState(true);
     var currentUser = getCurrentUser();
 
@@ -39,6 +40,7 @@ class NewFriendsPage extends HookWidget {
               })
           .toList();
       if (result.isEmpty) {
+        rawListData.value = [...result];
         listData.value = result;
         loading.value = false;
         return;
@@ -59,7 +61,6 @@ class NewFriendsPage extends HookWidget {
         if (data['isMyRequest']) {
           data['userName'] = getCurrentUser().displayName;
           data['photoURL'] = getCurrentUser().photoURL;
-          print(data['userName']);
         } else {
           var targetUserIndex = userData.docs.indexWhere(
               (element) => element.data()['email'] == data['email']);
@@ -127,10 +128,11 @@ class NewFriendsPage extends HookWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.all(ScreenUtil().setWidth(10)),
-                    child: const BaseTextFormFiled(
+                    child: BaseTextFormFiled(
                       hintText: 'email',
                       prefixIcon: Icons.search,
                       textInputAction: TextInputAction.search,
+                      onEditingComplete: () {},
                     ),
                   ),
                   Expanded(

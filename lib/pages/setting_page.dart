@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -18,16 +17,15 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar('Setting page', context),
+      appBar: buildAppBar('Settings', context),
       body: SettingsList(
-        contentPadding: EdgeInsets.all(ScreenUtil().setWidth(15)),
         sections: [
           SettingsSection(
-            title: Text('theme'),
+            title: const Text('theme'),
             tiles: <SettingsTile>[
               SettingsTile.navigation(
-                leading: Icon(Icons.brightness_6_outlined),
-                title: Text('brightness'),
+                leading: const Icon(Icons.brightness_6_outlined),
+                title: const Text('brightness'),
                 value: Text(context.watch<CurrentBrightness>().brightness),
                 onPressed: (_) async {
                   var brightnessKey =
@@ -60,10 +58,10 @@ class _SettingPageState extends State<SettingPage> {
             ],
           ),
           SettingsSection(
-            title: Text('account'),
+            title: const Text('account'),
             tiles: <SettingsTile>[
               SettingsTile(
-                title: Text('Sign out'),
+                title: const Text('Sign out'),
                 leading: const Icon(Icons.logout),
                 onPressed: (_) {
                   FirebaseAuth.instance.signOut().then((value) {

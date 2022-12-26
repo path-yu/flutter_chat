@@ -3,10 +3,12 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/upload_img.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
+import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat_setting_page.dart';
+import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:flutter_chat_bubble/clippers/chat_bubble_clipper_4.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -36,6 +39,12 @@ class _ChatPageState extends State<ChatPage> {
   bool showSendBtn = false;
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  List<String> get pics => messageList
+      .where((element) => element['type'] == 'pic')
+      .toList()
+      .map((e) => e['content'] as String)
+      .toList();
 
   @override
   void initState() {
@@ -138,6 +147,36 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void addImgMessage(List<String> urlList) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    var baseMessageData = urlList.map((url) {
+      return {
+        'content': url,
+        'type': 'pic',
+        'uid': getCurrentUser().uid,
+        'targetUid': replyUid,
+        'createTime': now
+      };
+    }).toList();
+    var currentUser = context.read<CurrentUser>().value;
+    var messages = baseMessageData.map((data) {
+      return {
+        ...data,
+        'isMyRequest': true,
+        'userName': currentUser['userName'],
+        'avatar': currentUser['photoURL'],
+        'showCreateTime': formatMessageDate(now)
+      };
+    }).toList();
+    setState(() {
+      messageList = [...messageList, ...messages];
+    });
+    addMultipleMessage(chatId, baseMessageData);
+    Future.delayed(const Duration(milliseconds: 150)).then((value) {
+      scrollToBottom();
+    });
+  }
+
   void scrollToBottom() {
     if (_scrollController.hasClients) {
       final position = _scrollController.position.maxScrollExtent;
@@ -175,23 +214,57 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (BuildContext context, int index) {
                     var item = messageList[index];
                     var isMyRequest = item['isMyRequest'];
-                    var bubble = ChatBubble(
-                      clipper: ChatBubbleClipper4(
-                          type: isMyRequest
-                              ? BubbleType.sendBubble
-                              : BubbleType.receiverBubble),
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
-                        ),
-                        child: item['type'] == 'text'
-                            ? Text(
-                                item['content'],
-                                style: const TextStyle(color: Colors.white),
-                              )
-                            : buildBaseImage(url: item['content']),
-                      ),
-                    );
+                    var bubble = item['type'] == 'text'
+                        ? ChatBubble(
+                            shadowColor:
+                                context.watch<CurrentBrightness>().isDarkMode
+                                    ? Colors.black
+                                    : Colors.grey,
+                            clipper: ChatBubbleClipper4(
+                                type: isMyRequest
+                                    ? BubbleType.sendBubble
+                                    : BubbleType.receiverBubble),
+                            child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.7,
+                                ),
+                                child: Text(
+                                  item['content'],
+                                  style: const TextStyle(color: Colors.white),
+                                )),
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              var index = pics.indexOf(item['content']);
+                              //打开B路由
+                              Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    transitionDuration:
+                                        const Duration(milliseconds: 150),
+                                    pageBuilder: (
+                                      BuildContext context,
+                                      animation,
+                                      secondaryAnimation,
+                                    ) {
+                                      return ScaleTransition(
+                                        scale: animation,
+                                        child: PhotoView(
+                                          pics: pics,
+                                          showIndex: index,
+                                        ),
+                                      );
+                                    },
+                                  ));
+                            },
+                            child: Hero(
+                                tag: item['content'],
+                                child: buildBaseImage(
+                                    url: item['content'],
+                                    width: 200,
+                                    height: 240)),
+                          );
                     return Container(
                       padding: EdgeInsets.all(ScreenUtil().setWidth(10)),
                       child: Row(
@@ -264,14 +337,24 @@ class _ChatPageState extends State<ChatPage> {
                       top: BorderSide(
                           color: context.read<CurrentBrightness>().isDarkMode
                               ? Colors.black26
-                              : Color(0xFFDFDFDF),
+                              : const Color(0xFFDFDFDF),
                           width: ScreenUtil().setWidth(1)),
                     )),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          buildIconButton(Icons.image, () {},
-                              size: 20, iconColor: Colors.blue),
+                          buildIconButton(Icons.image, () async {
+                            final List<AssetEntity>? result =
+                                await AssetPicker.pickAssets(
+                              context,
+                              pickerConfig: const AssetPickerConfig(
+                                  maxAssets: 3, themeColor: primaryColor),
+                            );
+                            if (result != null) {
+                              var urlList = await uploadAssetsImage(result);
+                              addImgMessage(urlList);
+                            }
+                          }, size: 20, iconColor: Colors.blue),
 
                           // First child is enter comment text input
                           Expanded(

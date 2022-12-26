@@ -156,9 +156,11 @@ class _HomeMessagesState extends State<HomeMessages> {
                         ),
                       ),
                       title: buildOneLineText(item['showUserName']),
-                      subtitle: buildOneLineText(
-                        item['lastMessage'],
-                      ),
+                      subtitle: item['lastMessage'] != null
+                          ? buildOneLineText(
+                              item['lastMessage'],
+                            )
+                          : null,
                       trailing: Text(item['showUpdateTime'],
                           style: subtitleTextStyle),
                     );

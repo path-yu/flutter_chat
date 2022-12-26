@@ -42,6 +42,7 @@ class _HomeContactsState extends State<HomeContacts> {
           loading = false;
         });
       }
+      // ignore: prefer_typing_uninitialized_variables
       var data;
       if (contacts.length < 10) {
         var contactsList = await searchUserByEmails(contacts);

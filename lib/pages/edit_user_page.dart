@@ -1,9 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter_chat/common/upload_img.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/base_text_form_filed.dart';
@@ -13,7 +9,6 @@ import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class EditUserPage extends StatefulWidget {
   const EditUserPage({Key? key}) : super(key: key);

@@ -32,6 +32,7 @@ dependencies:
   extended_image: ^6.3.4
   adaptive_dialog: ^1.8.0+1
   settings_ui: ^2.0.2
+  wechat_assets_picker: ^8.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

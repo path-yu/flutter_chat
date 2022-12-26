@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 pickerImgAndUpload(Function(String) successCallback) async {
   final ImagePicker picker = ImagePicker();
@@ -37,4 +38,21 @@ pickerImgAndUpload(Function(String) successCallback) async {
       }
     });
   }
+}
+
+Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {
+  List<String> result = [];
+  EasyLoading.show(status: 'upload...');
+  for (var entity in list) {
+    var file = await entity.originFile;
+    final String path = file!.path;
+    String fileName = file.uri.pathSegments.last;
+    final mountainsRef = FirebaseStorage.instance.ref('messageImg/$fileName');
+    Uint8List fileBytes = await file.readAsBytes();
+    await mountainsRef.putData(fileBytes);
+    var url = await mountainsRef.getDownloadURL();
+    result.add(url);
+  }
+  EasyLoading.dismiss();
+  return result;
 }

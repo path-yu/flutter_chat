@@ -231,6 +231,14 @@ void addMessage(String id, Map message) {
   });
 }
 
+void addMultipleMessage(String id, List<Map> messages) {
+  db.collection(ChatsKey).doc(id).update({
+    'messages': FieldValue.arrayUnion(messages),
+    'targetMessages': FieldValue.arrayUnion(messages),
+    'updateTime': DateTime.now().millisecondsSinceEpoch
+  });
+}
+
 Future<Map<String, dynamic>> handleChatData(
     QuerySnapshot<Map<String, dynamic>> chats) async {
   var currentUser = getCurrentUser();

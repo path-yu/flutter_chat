@@ -18,7 +18,7 @@ class CurrentBrightness with ChangeNotifier {
   bool get isDarkMode => brightness == 'system'
       ? systemBrightness == Brightness.dark
       : value == Brightness.dark;
-
+  Color get textColor => isDarkMode ? Colors.white : Colors.black;
   CurrentBrightness(this.brightness, this.systemBrightness);
 
   changeBrightness(String value) async {
