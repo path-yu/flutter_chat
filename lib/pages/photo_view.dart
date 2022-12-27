@@ -1,5 +1,6 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/components/common.dart';
 
 class PhotoView extends StatefulWidget {
   final List<String> pics;
@@ -10,12 +11,13 @@ class PhotoView extends StatefulWidget {
   State<PhotoView> createState() => _PhotoViewState();
 }
 
+enum SampleItem { save }
+
 class _PhotoViewState extends State<PhotoView> {
   int currentIndex = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setState(() {
       currentIndex = widget.showIndex;
@@ -24,10 +26,38 @@ class _PhotoViewState extends State<PhotoView> {
 
   @override
   Widget build(BuildContext context) {
+    SampleItem? selectedMenu;
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        leading: const BackButton(
+          color: Colors.white,
+        ),
         backgroundColor: Colors.transparent,
+        actions: [
+          PopupMenuButton<SampleItem>(
+            initialValue: selectedMenu,
+            position: PopupMenuPosition.under,
+            // Callback that sets the selected popup menu item.
+            onSelected: (SampleItem item) {
+              setState(() {
+                selectedMenu = item;
+              });
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
+              PopupMenuItem<SampleItem>(
+                value: SampleItem.save,
+                child: const Text('save'),
+                onTap: () {
+                  saveImg(widget.pics[currentIndex]);
+                },
+              ),
+            ],
+            child: const Icon(
+              Icons.more_vert,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
       backgroundColor: Colors.black,
       body: ExtendedImageGesturePageView.builder(
@@ -45,7 +75,7 @@ class _PhotoViewState extends State<PhotoView> {
           );
           if (index == currentIndex) {
             return Hero(
-              tag: url + index.toString(),
+              tag: url,
               child: image,
             );
           } else {

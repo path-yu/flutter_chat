@@ -2,6 +2,7 @@
     package="com.example.flutter_chat">
    <application
         android:label="flutter_chat"
+        android:requestLegacyExternalStorage="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

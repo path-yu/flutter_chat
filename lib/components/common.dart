@@ -1,7 +1,10 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/main.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:path_provider/path_provider.dart';
 
 double baseSize = ScreenUtil().setSp(16);
 PreferredSizeWidget buildAppBar(String title, BuildContext context,
@@ -164,4 +167,13 @@ Widget buildBaseEmptyWidget(String message) {
       child: Opacity(opacity: 0.6, child: Text(message)),
     ),
   );
+}
+
+saveImg(String url) async {
+  var response =
+      await Dio().get(url, options: Options(responseType: ResponseType.bytes));
+  Directory documentDirectory = await getApplicationDocumentsDirectory();
+  File file = File(
+      '${documentDirectory.path}chat_img${DateTime.now().millisecondsSinceEpoch}.png');
+  file.writeAsBytesSync(response.data); // This is a sync operation on a rea
 }

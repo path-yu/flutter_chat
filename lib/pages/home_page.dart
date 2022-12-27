@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
@@ -92,7 +91,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
         items: bottomTabsList,
-        selectedItemColor: primaryColor,
         onTap: handleOnTap,
       ),
       body: IndexedStack(

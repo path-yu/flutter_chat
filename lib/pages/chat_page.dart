@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/upload_img.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_chat/pages/chat_setting_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:octo_image/octo_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chat_bubble/bubble_type.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
@@ -188,6 +190,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    print(screenWidth * 0.3);
     return HideKeyboard(
       child: Scaffold(
         appBar: buildAppBar(widget.parentChatData!['appbarTitle'], context,
@@ -214,57 +219,60 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (BuildContext context, int index) {
                     var item = messageList[index];
                     var isMyRequest = item['isMyRequest'];
-                    var bubble = item['type'] == 'text'
-                        ? ChatBubble(
-                            shadowColor:
-                                context.watch<CurrentBrightness>().isDarkMode
-                                    ? Colors.black
-                                    : Colors.grey,
-                            clipper: ChatBubbleClipper4(
-                                type: isMyRequest
-                                    ? BubbleType.sendBubble
-                                    : BubbleType.receiverBubble),
-                            child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth:
-                                      MediaQuery.of(context).size.width * 0.7,
-                                ),
-                                child: Text(
-                                  item['content'],
-                                  style: const TextStyle(color: Colors.white),
-                                )),
-                          )
-                        : GestureDetector(
-                            onTap: () {
-                              var index = pics.indexOf(item['content']);
-                              //打开B路由
-                              Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    transitionDuration:
-                                        const Duration(milliseconds: 150),
-                                    pageBuilder: (
-                                      BuildContext context,
-                                      animation,
-                                      secondaryAnimation,
-                                    ) {
-                                      return ScaleTransition(
-                                        scale: animation,
-                                        child: PhotoView(
-                                          pics: pics,
-                                          showIndex: index,
-                                        ),
-                                      );
-                                    },
-                                  ));
+                    StatelessWidget bubble;
+                    if (item['type'] == 'text') {
+                      bubble = ChatBubble(
+                        backGroundColor:
+                            isMyRequest ? Colors.blueAccent : Colors.blue,
+                        shadowColor:
+                            context.watch<CurrentBrightness>().isDarkMode
+                                ? darkMainColor
+                                : Colors.grey,
+                        clipper: ChatBubbleClipper4(
+                            type: isMyRequest
+                                ? BubbleType.sendBubble
+                                : BubbleType.receiverBubble),
+                        child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: screenWidth * 0.7,
+                            ),
+                            child: SelectableText(
+                              item['content'],
+                              style: const TextStyle(color: Colors.white),
+                            )),
+                      );
+                    } else {
+                      bubble = GestureDetector(
+                        onTap: () {
+                          var index = pics.indexOf(item['content']);
+                          //打开B路由
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (
+                              BuildContext context,
+                            ) {
+                              return PhotoView(
+                                pics: pics,
+                                showIndex: index,
+                              );
                             },
-                            child: Hero(
-                                tag: item['content'],
-                                child: buildBaseImage(
-                                    url: item['content'],
-                                    width: 200,
-                                    height: 240)),
-                          );
+                          ));
+                        },
+                        child: Hero(
+                            tag: item['content'],
+                            child: Container(
+                              constraints: BoxConstraints(
+                                  maxWidth: screenWidth * 0.6,
+                                  maxHeight: screenHeight * 0.4),
+                              child: OctoImage(
+                                image:
+                                    CachedNetworkImageProvider(item['content']),
+                                placeholderBuilder: OctoPlaceholder.blurHash(
+                                    'LEHV6nWB2yk8pyo0adR*.7kCMdnj',
+                                    fit: BoxFit.cover),
+                              ),
+                            )),
+                      );
+                    }
                     return Container(
                       padding: EdgeInsets.all(ScreenUtil().setWidth(10)),
                       child: Row(
@@ -336,7 +344,7 @@ class _ChatPageState extends State<ChatPage> {
                         border: Border(
                       top: BorderSide(
                           color: context.read<CurrentBrightness>().isDarkMode
-                              ? Colors.black26
+                              ? darkMainColor
                               : const Color(0xFFDFDFDF),
                           width: ScreenUtil().setWidth(1)),
                     )),
@@ -355,7 +363,6 @@ class _ChatPageState extends State<ChatPage> {
                               addImgMessage(urlList);
                             }
                           }, size: 20, iconColor: Colors.blue),
-
                           // First child is enter comment text input
                           Expanded(
                             child: TextFormField(
@@ -371,12 +378,13 @@ class _ChatPageState extends State<ChatPage> {
                                 contentPadding: const EdgeInsets.all(10),
                                 fillColor:
                                     context.read<CurrentBrightness>().isDarkMode
-                                        ? Colors.black26
+                                        ? darkMainColor
                                         : Colors.white,
                                 filled: true, // dont forget this line
                               ),
                             ),
                           ),
+
                           // Second child is button
                         ])),
               ],

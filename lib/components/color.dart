@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const primaryColor = Colors.blue;
+const darkMainColor = Color(0xff303030);
 const Map<String, Color> baseThemeMap = {
   'success': primaryColor,
   'warning': Color(0xFFE6A23C),

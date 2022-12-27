@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
               initialRoute: '/',
               builder: EasyLoading.init(),
               theme: ThemeData(
-                  // is not restarted.
+                  useMaterial3: true,
                   primarySwatch: primaryColor,
                   brightness: context.watch<CurrentBrightness>().value),
               onGenerateRoute: (RouteSettings settings) {
