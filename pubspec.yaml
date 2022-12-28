@@ -34,6 +34,9 @@ dependencies:
   settings_ui: ^2.0.2
   wechat_assets_picker: ^8.2.0
   dio: ^4.0.6
+  path: 1.8.2
+  gallery_saver: ^2.3.2
+  flutter_native_splash: ^2.2.16
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -43,3 +46,14 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
+  # 配置启动页
+flutter_native_splash:
+  color: "#e1f5fe"
+  image: assets/logo_lockup_flutter_vertical.png
+  color_dark: "#042a49"
+  image_dark: assets/logo_lockup_flutter_vertical_wht.png
+  android: true
+  ios: true
+  web: false
+  android_gravity: center
+  fullerene: true
