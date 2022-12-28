@@ -81,7 +81,7 @@ class _HomeMessagesState extends State<HomeMessages> {
     // listen message
   }
 
-  void initGetChatData() async {
+  initGetChatData() async {
     var user = await searchUserByEmail(getCurrentUser().email!);
     var userData = user.docs[0].data();
     List chats = userData['chats'];
@@ -97,6 +97,7 @@ class _HomeMessagesState extends State<HomeMessages> {
       chatList = [data];
       eventBus.fire(ChatsChangeEvent(chatList));
     });
+    return true;
   }
 
   @override
@@ -126,53 +127,59 @@ class _HomeMessagesState extends State<HomeMessages> {
           ? baseLoading
           : chatList.isEmpty
               ? buildBaseEmptyWidget('no chats')
-              : ListView.separated(
-                  itemBuilder: (context, index) {
-                    var item = chatList[index];
-                    return ListTile(
-                      onTap: () {
-                        // Obtain shared preferences.
-                        SharedPreferences.getInstance().then((prefs) {
-                          var offset = prefs.getString(item['id']);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatPage(
-                                parentChatData: item,
-                                initialScrollOffset:
-                                    offset != null ? double.parse(offset) : 0,
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    await initGetChatData();
+                    return;
+                  },
+                  child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      var item = chatList[index];
+                      return ListTile(
+                        onTap: () {
+                          // Obtain shared preferences.
+                          SharedPreferences.getInstance().then((prefs) {
+                            var offset = prefs.getString(item['id']);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatPage(
+                                  parentChatData: item,
+                                  initialScrollOffset:
+                                      offset != null ? double.parse(offset) : 0,
+                                ),
                               ),
-                            ),
-                          );
-                        });
-                      },
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: ClipOval(
-                          child: buildBaseImage(
-                              width: ScreenUtil().setWidth(40),
-                              height: ScreenUtil().setHeight(40),
-                              url: item['showAvatar']),
+                            );
+                          });
+                        },
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(5.0),
+                          child: ClipOval(
+                            child: buildBaseImage(
+                                width: ScreenUtil().setWidth(40),
+                                height: ScreenUtil().setHeight(40),
+                                url: item['showAvatar']),
+                          ),
                         ),
-                      ),
-                      title: buildOneLineText(item['showUserName']),
-                      subtitle: item['lastMessage'] != null
-                          ? buildOneLineText(
-                              item['lastMessage'],
-                            )
-                          : null,
-                      trailing: Text(item['showUpdateTime'],
-                          style: subtitleTextStyle),
-                    );
-                  },
-                  itemCount: chatList.length,
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Divider(
-                      color: Colors.grey,
-                      height: ScreenUtil().setHeight(1),
-                      indent: ScreenUtil().setWidth(65),
-                    );
-                  },
+                        title: buildOneLineText(item['showUserName']),
+                        subtitle: item['lastMessage'] != null
+                            ? buildOneLineText(
+                                item['lastMessage'],
+                              )
+                            : null,
+                        trailing: Text(item['showUpdateTime'],
+                            style: subtitleTextStyle),
+                      );
+                    },
+                    itemCount: chatList.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Divider(
+                        color: Colors.grey,
+                        height: ScreenUtil().setHeight(1),
+                        indent: ScreenUtil().setWidth(65),
+                      );
+                    },
+                  ),
                 ),
     );
   }

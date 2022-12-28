@@ -57,6 +57,7 @@ class _LoginPageState extends State<LoginPage>
         return true;
       },
       child: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: buildAppBar('Welcome to login', context,
               showBackButton:
                   args != null ? false : Navigator.of(context).canPop()),
@@ -73,7 +74,7 @@ class _LoginPageState extends State<LoginPage>
                         controller: _emailController,
                         validator: (value) {
                           if (value!.isEmpty || !value.contains('@')) {
-                            return 'please enter a valid email address';
+                            return 'Please enter a valid email address';
                           }
                           return null;
                         },
@@ -90,7 +91,7 @@ class _LoginPageState extends State<LoginPage>
                         controller: _passwordController,
                         obscureText: true,
                         validator: (value) {
-                          if (value!.isNotEmpty && value.length < 6) {
+                          if (value!.isEmpty || value.length < 6) {
                             return 'Password should be at least 6 characters';
                           }
                           return null;

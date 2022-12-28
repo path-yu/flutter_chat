@@ -26,11 +26,6 @@ class _EditUserPageState extends State<EditUserPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 300)).then((value) {
-      setState(() {
-        avatar = context.read<CurrentUser>().value['photoURL'];
-      });
-    });
   }
 
   void handleOpenFilePickerClick() async {
@@ -48,6 +43,9 @@ class _EditUserPageState extends State<EditUserPage> {
     }
     if (suggest.isEmpty) {
       suggest = context.read<CurrentUser>().value['suggest'];
+    }
+    if (avatar.isEmpty) {
+      avatar = context.read<CurrentUser>().value['photoURL'];
     }
     return HideKeyboard(
       child: Scaffold(

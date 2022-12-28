@@ -42,6 +42,14 @@ void main() async {
   SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   );
+  window.onPlatformBrightnessChanged = () {
+    if (navigatorKey.currentContext!.read<CurrentBrightness>().brightness ==
+        'system') {
+      navigatorKey.currentContext!
+          .read<CurrentBrightness>()
+          .changeSystemBrightness(window.platformBrightness);
+    }
+  };
   SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
 }
 

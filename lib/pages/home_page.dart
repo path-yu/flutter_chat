@@ -1,12 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
-import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:provider/provider.dart';
 
@@ -58,14 +55,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         });
       }
     });
-
-    window.onPlatformBrightnessChanged = () {
-      if (context.read<CurrentBrightness>().brightness == 'system') {
-        context
-            .read<CurrentBrightness>()
-            .changeSystemBrightness(window.platformBrightness);
-      }
-    };
   }
 
   @override
