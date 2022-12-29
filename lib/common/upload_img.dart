@@ -1,5 +1,6 @@
 import 'dart:typed_data';
-
+import 'package:flutter_chat/common/firebase.dart';
+import 'package:path/path.dart' as path;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,12 +10,11 @@ pickerImgAndUpload(Function(String) successCallback) async {
   final ImagePicker picker = ImagePicker();
   // Pick an image
   final XFile? result = await picker.pickImage(source: ImageSource.gallery);
-
+  var currentUser = getCurrentUser();
   if (result != null) {
     Uint8List fileBytes = await result.readAsBytes();
-    String fileName = result.name;
-
-    final mountainsRef = FirebaseStorage.instance.ref('uploads/$fileName');
+    final mountainsRef = FirebaseStorage.instance
+        .ref('uploads/${currentUser.uid}_avatar${path.extension(result.path)}');
 
     mountainsRef.putData(fileBytes).snapshotEvents.listen((taskSnapshot) async {
       switch (taskSnapshot.state) {

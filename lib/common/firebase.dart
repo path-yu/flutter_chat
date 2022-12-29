@@ -282,7 +282,6 @@ Future<Map<String, dynamic>> handleChatData(
         data['isMyRequest'] ? data['targetUserPhotoURL'] : data['userPhotoURL'];
     data['showUserName'] =
         data['isMyRequest'] ? data['targetUserName'] : data['userName'];
-    data['lastMessage'] = '';
   }
   data['appbarTitle'] =
       data['isMyRequest'] ? data['targetUserName'] : data['userName'];

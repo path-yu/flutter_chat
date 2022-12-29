@@ -36,6 +36,7 @@ class _ChatPageState extends State<ChatPage> {
   List messageList = [];
   var chatId = '';
   var replyUid = '';
+  bool isMyRequest = false;
   String imgUrl = '';
   double offset = 0;
   bool showToBottomBtn = false;
@@ -61,6 +62,7 @@ class _ChatPageState extends State<ChatPage> {
       messageList = widget.parentChatData!['messageList'];
       chatId = widget.parentChatData!['chatId'];
       replyUid = widget.parentChatData!['replyUid'];
+      isMyRequest = widget.parentChatData!['isMyRequest'];
     });
     eventBus.on<ChatsChangeEvent>().listen((data) {
       var index = data.value.indexWhere((element) => element['id'] == chatId);
@@ -213,9 +215,8 @@ class _ChatPageState extends State<ChatPage> {
                     MaterialPageRoute(
                       builder: (context) => ChatSettingPage(
                           chatId: chatId,
-                          messageListKey: replyUid == getCurrentUser().uid
-                              ? 'messages'
-                              : 'targetMessages'),
+                          messageListKey:
+                              isMyRequest ? 'messages' : 'targetMessages'),
                     ));
               })
             ]),
