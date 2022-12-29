@@ -359,20 +359,38 @@ class _ChatPageState extends State<ChatPage> {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            buildSpace(ScreenUtil().setWidth(15)),
                             Transform.translate(
                               offset: const Offset(0, -2),
-                              child: buildIconButton(Icons.image, () async {
-                                final List<AssetEntity>? result =
-                                    await AssetPicker.pickAssets(
-                                  context,
-                                  pickerConfig: const AssetPickerConfig(
-                                      maxAssets: 3, themeColor: primaryColor),
-                                );
-                                if (result != null) {
-                                  var urlList = await uploadAssetsImage(result);
-                                  addImgMessage(urlList);
-                                }
-                              }, size: 20, iconColor: primaryColor),
+                              child: GestureDetector(
+                                child: const Icon(
+                                  Icons.mic,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                            buildSpace(ScreenUtil().setWidth(10)),
+                            Transform.translate(
+                              offset: const Offset(0, -2),
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final List<AssetEntity>? result =
+                                      await AssetPicker.pickAssets(
+                                    context,
+                                    pickerConfig: const AssetPickerConfig(
+                                        maxAssets: 3, themeColor: primaryColor),
+                                  );
+                                  if (result != null) {
+                                    var urlList =
+                                        await uploadAssetsImage(result);
+                                    addImgMessage(urlList);
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.image,
+                                  color: primaryColor,
+                                ),
+                              ),
                             ),
                             // First child is enter comment text input
                             Expanded(

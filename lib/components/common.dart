@@ -164,3 +164,10 @@ Widget buildBaseEmptyWidget(String message) {
     ),
   );
 }
+
+Widget buildSpace(width) {
+  return SizedBox(
+    width: width,
+    child: Container(),
+  );
+}
