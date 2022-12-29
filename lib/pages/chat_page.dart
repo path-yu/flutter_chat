@@ -376,9 +376,14 @@ class _ChatPageState extends State<ChatPage> {
                             ),
                             // First child is enter comment text input
                             Expanded(
-                              child: TextFormField(
-                                autocorrect: false,
+                              child: TextField(
                                 controller: _controller,
+                                keyboardType: TextInputType.multiline,
+                                minLines:
+                                    1, //Normal textInputField will be displayed
+                                maxLines:
+                                    5, // when user presses enter it will adapt to it
+                                textInputAction: TextInputAction.newline,
                                 decoration: InputDecoration(
                                   hintText: 'some message',
                                   border: InputBorder.none,

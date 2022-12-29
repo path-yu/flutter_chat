@@ -7,7 +7,7 @@ class BaseTextFormFiled extends StatefulWidget {
   final IconData? prefixIcon;
   final void Function(String?)? onChanged;
   final bool? obscureText;
-  final void Function()? onEditingComplete;
+  final void Function(String value)? onEditingComplete;
   final TextInputAction? textInputAction;
   final String? labelText;
   final String? initialValue;
@@ -62,7 +62,9 @@ class _BaseTextFormFiledState extends State<BaseTextFormFiled> {
       validator: widget.validator,
       onChanged: widget.onChanged,
       textInputAction: widget.textInputAction,
-      onEditingComplete: widget.onEditingComplete,
+      onEditingComplete: () {
+        widget.onEditingComplete!(_controller.text);
+      },
       maxLines: widget.maxLines,
       keyboardType: widget.keyboardType,
       decoration: InputDecoration(

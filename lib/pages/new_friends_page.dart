@@ -40,7 +40,6 @@ class NewFriendsPage extends HookWidget {
               })
           .toList();
       if (result.isEmpty) {
-        rawListData.value = [...result];
         listData.value = result;
         loading.value = false;
         return;
@@ -70,6 +69,7 @@ class NewFriendsPage extends HookWidget {
         return data;
       }).toList();
       listData.value = result;
+      rawListData.value = [...result];
       loading.value = false;
     }
 
@@ -132,7 +132,18 @@ class NewFriendsPage extends HookWidget {
                       hintText: 'email',
                       prefixIcon: Icons.search,
                       textInputAction: TextInputAction.search,
-                      onEditingComplete: () {},
+                      onEditingComplete: (value) {
+                        if (value.isNotEmpty) {
+                          listData.value = rawListData.value.where((element) {
+                            var email = element['email'] as String;
+                            var targetEmail = element['targetEmail'] as String;
+                            return email.contains(value) ||
+                                targetEmail.contains(value);
+                          }).toList();
+                        } else {
+                          listData.value = [...rawListData.value];
+                        }
+                      },
                     ),
                   ),
                   Expanded(

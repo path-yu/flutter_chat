@@ -22,7 +22,7 @@ class _AddContactPageState extends State<AddContactPage> {
   String remarks = '';
   String photoUrl = '';
 
-  checkUserContain() async {
+  checkUserContain(_) async {
     if (email == FirebaseAuth.instance.currentUser!.email) {
       return showMessage(
           context: navigatorKey.currentState!.context,
@@ -96,6 +96,7 @@ class _AddContactPageState extends State<AddContactPage> {
                                 },
                                 hintText: 'Email',
                                 prefixIcon: Icons.email,
+                                textInputAction: TextInputAction.search,
                               ),
                               BaseTextFormFiled(
                                 validator: (value) {

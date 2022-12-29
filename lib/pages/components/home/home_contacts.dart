@@ -1,6 +1,7 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
@@ -165,11 +166,9 @@ class _HomeContactsState extends State<HomeContacts> {
       appBar: buildAppBar('Contacts', context,
           showBackButton: false,
           actions: [
-            buildIconButton(Icons.search, (() {
-              Navigator.pushNamed(context, '/search');
-            }), size: ScreenUtil().setSp(20)),
             buildIconButton(Icons.add, handleAddContactClick,
-                size: ScreenUtil().setSp(20))
+                size: ScreenUtil().setSp(20)),
+            buildIconButton(Icons.search, () {}, size: ScreenUtil().setSp(20))
           ],
           leading: GestureDetector(
             onTap: () {
@@ -208,7 +207,9 @@ class _HomeContactsState extends State<HomeContacts> {
             title: const Text('new friends'),
           ),
           ListTile(
-            onTap: () {},
+            onTap: () {
+              showToast('No development yet');
+            },
             leading: Icon(
               Icons.groups,
               size: ScreenUtil().setSp(25),
