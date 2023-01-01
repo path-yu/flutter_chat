@@ -1,4 +1,4 @@
-import 'package:flutter_chat/common/upload_img.dart';
+import 'package:flutter_chat/common/upload.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';

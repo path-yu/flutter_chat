@@ -1,11 +1,16 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/upload_img.dart';
+import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/upload.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
+import 'package:flutter_chat/components/build_scale_animated_switcher.dart';
 import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/components/common.dart';
+import 'package:flutter_chat/components/fade_indexed_stack.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat_setting_page.dart';
@@ -19,6 +24,7 @@ import 'package:flutter_chat_bubble/clippers/chat_bubble_clipper_4.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:record/record.dart';
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -46,6 +52,14 @@ class _ChatPageState extends State<ChatPage> {
   double scrollMove = 0;
   double startMoveOffset = 0;
   MoveDirection? moveDirection;
+  bool hasLongPres = false;
+  int indexedStackIndex = 0;
+  String recordingTime = '';
+  Timer? recordTimer;
+  int maxSeconds = 120;
+  bool stopRecording = false;
+  bool isRecordEnd = false;
+  Record? record;
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -109,7 +123,11 @@ class _ChatPageState extends State<ChatPage> {
   void initListenerMessage() {
     _controller.addListener(() {
       setState(() {
-        showSendBtn = _controller.text.trim().isNotEmpty;
+        if (_controller.text.contains('\n')) {
+          showSendBtn = true;
+        } else {
+          showSendBtn = _controller.text.trim().isNotEmpty;
+        }
       });
     });
   }
@@ -121,6 +139,7 @@ class _ChatPageState extends State<ChatPage> {
     });
     _scrollController.dispose();
     _controller.dispose();
+    clearTimer();
     super.dispose();
   }
 
@@ -198,6 +217,64 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  void closeRecording() {
+    setState(() {
+      indexedStackIndex = 0;
+    });
+    clearTimer();
+  }
+
+  void clearTimer() {
+    recordTimer?.cancel();
+    record?.dispose();
+  }
+
+  void startRecording() async {
+    int startSeconds = 0;
+    setState(() {
+      recordingTime = '0:0';
+      stopRecording = false;
+      isRecordEnd = false;
+    });
+    record = Record();
+    // Check and request permission
+    if (await record!.hasPermission()) {
+      // Start recording
+      await record!.start();
+    }
+    recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (stopRecording) {
+        return;
+      }
+      startSeconds++;
+      if (startSeconds >= maxSeconds) {
+        showToast('Maximum recording time exceeded');
+        isRecordEnd = true;
+        clearTimer();
+      }
+      var time = Duration(seconds: startSeconds);
+      var timeM = (time.inMinutes % 60).toInt();
+      var timeS = time.inSeconds - (timeM * 60);
+      setState(() {
+        recordingTime = '$timeM:$timeS';
+      });
+    });
+    setState(() {
+      indexedStackIndex = 1;
+    });
+  }
+
+  void handSendVoiceClick() async {
+    closeRecording();
+    var path = await record?.stop();
+    if (path != null) {
+      File file = File(path);
+      // Todo
+      var url = await uploadFile(file);
+      print(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -235,28 +312,7 @@ class _ChatPageState extends State<ChatPage> {
                       var item = messageList[index];
                       var isMyRequest = item['isMyRequest'];
                       StatelessWidget bubble;
-                      if (item['type'] == 'text') {
-                        bubble = ChatBubble(
-                          backGroundColor:
-                              isMyRequest ? Colors.blueAccent : Colors.blue,
-                          shadowColor:
-                              context.watch<CurrentBrightness>().isDarkMode
-                                  ? darkMainColor
-                                  : Colors.grey,
-                          clipper: ChatBubbleClipper4(
-                              type: isMyRequest
-                                  ? BubbleType.sendBubble
-                                  : BubbleType.receiverBubble),
-                          child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth: screenWidth * 0.7,
-                              ),
-                              child: SelectableText(
-                                item['content'],
-                                style: const TextStyle(color: Colors.white),
-                              )),
-                        );
-                      } else {
+                      if (item['type'] == 'pic') {
                         bubble = GestureDetector(
                           onTap: () {
                             var index = pics.indexOf(item['content']);
@@ -284,6 +340,27 @@ class _ChatPageState extends State<ChatPage> {
                                   mode: ExtendedImageMode.gesture,
                                   cache: true,
                                 ),
+                              )),
+                        );
+                      } else {
+                        bubble = ChatBubble(
+                          backGroundColor:
+                              isMyRequest ? Colors.blueAccent : Colors.blue,
+                          shadowColor:
+                              context.watch<CurrentBrightness>().isDarkMode
+                                  ? darkMainColor
+                                  : Colors.grey,
+                          clipper: ChatBubbleClipper4(
+                              type: isMyRequest
+                                  ? BubbleType.sendBubble
+                                  : BubbleType.receiverBubble),
+                          child: Container(
+                              constraints: BoxConstraints(
+                                maxWidth: screenWidth * 0.7,
+                              ),
+                              child: SelectableText(
+                                item['content'],
+                                style: const TextStyle(color: Colors.white),
                               )),
                         );
                       }
@@ -354,72 +431,128 @@ class _ChatPageState extends State<ChatPage> {
                   const Divider(
                     height: 1,
                   ),
-                  Container(
-                      color: fillColor,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                  FadeIndexedStack(
+                    index: indexedStackIndex,
+                    duration: const Duration(milliseconds: 300),
+                    children: [
+                      Container(
+                          color: fillColor,
+                          height: ScreenUtil().setHeight(55),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                buildSpace(ScreenUtil().setWidth(10)),
+                                Transform.translate(
+                                  offset: const Offset(0, -2),
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      final List<AssetEntity>? result =
+                                          await AssetPicker.pickAssets(
+                                        context,
+                                        pickerConfig: const AssetPickerConfig(
+                                            maxAssets: 3,
+                                            themeColor: primaryColor),
+                                      );
+                                      if (result != null) {
+                                        var urlList =
+                                            await uploadAssetsImage(result);
+                                        addImgMessage(urlList);
+                                      }
+                                    },
+                                    child: const Icon(
+                                      Icons.image,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _controller,
+                                    keyboardType: TextInputType.multiline,
+                                    minLines:
+                                        1, //Normal textInputField will be displayed
+                                    maxLines:
+                                        5, // when user presses enter it will adapt to it
+                                    textInputAction: TextInputAction.newline,
+                                    decoration: InputDecoration(
+                                      hintText: 'some message',
+                                      border: InputBorder.none,
+                                      suffixIcon: showSendBtn
+                                          ? buildIconButton(
+                                              Icons.send, handSendClick,
+                                              size: 20, iconColor: Colors.blue)
+                                          : const SizedBox(),
+                                      isDense: true,
+                                      contentPadding: const EdgeInsets.all(8),
+                                      fillColor: fillColor,
+                                      filled: true, // dont forget this line
+                                    ),
+                                  ),
+                                ),
+                                Transform.translate(
+                                  offset: const Offset(0, -2),
+                                  child: !showSendBtn
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            startRecording();
+                                          },
+                                          child: const Icon(
+                                            Icons.mic,
+                                          ),
+                                        )
+                                      : Container(),
+                                ),
+                                buildSpace(ScreenUtil().setWidth(10)),
+                                // Second child is button
+                              ])),
+                      Container(
+                        color: fillColor,
+                        height: ScreenUtil().setHeight(55),
+                        padding: const EdgeInsets.fromLTRB(10, 10, 2, 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            buildSpace(ScreenUtil().setWidth(15)),
-                            Transform.translate(
-                              offset: const Offset(0, -2),
-                              child: GestureDetector(
-                                child: const Icon(
-                                  Icons.mic,
-                                  color: primaryColor,
-                                ),
-                              ),
+                            Row(
+                              children: [
+                                buildScaleAnimatedSwitcher(Icon(
+                                  stopRecording ? Icons.mic_off : Icons.mic,
+                                  key: ValueKey(stopRecording),
+                                )),
+                                buildSpace(ScreenUtil().setWidth(10)),
+                                Text(recordingTime,
+                                    style: TextStyle(
+                                        fontSize: ScreenUtil().setSp(16))),
+                              ],
                             ),
-                            buildSpace(ScreenUtil().setWidth(10)),
-                            Transform.translate(
-                              offset: const Offset(0, -2),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final List<AssetEntity>? result =
-                                      await AssetPicker.pickAssets(
-                                    context,
-                                    pickerConfig: const AssetPickerConfig(
-                                        maxAssets: 3, themeColor: primaryColor),
-                                  );
-                                  if (result != null) {
-                                    var urlList =
-                                        await uploadAssetsImage(result);
-                                    addImgMessage(urlList);
-                                  }
-                                },
-                                child: const Icon(
-                                  Icons.image,
-                                  color: primaryColor,
+                            Row(
+                              children: [
+                                TextButton(
+                                  onPressed: isRecordEnd
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            stopRecording = !stopRecording;
+                                          });
+                                          stopRecording
+                                              ? record?.pause()
+                                              : record?.resume();
+                                        },
+                                  child: Text(stopRecording ? 'Start' : 'Stop'),
                                 ),
-                              ),
-                            ),
-                            // First child is enter comment text input
-                            Expanded(
-                              child: TextField(
-                                controller: _controller,
-                                keyboardType: TextInputType.multiline,
-                                minLines:
-                                    1, //Normal textInputField will be displayed
-                                maxLines:
-                                    5, // when user presses enter it will adapt to it
-                                textInputAction: TextInputAction.newline,
-                                decoration: InputDecoration(
-                                  hintText: 'some message',
-                                  border: InputBorder.none,
-                                  suffixIcon: showSendBtn
-                                      ? buildIconButton(
-                                          Icons.send, handSendClick,
-                                          size: 20, iconColor: Colors.blue)
-                                      : const SizedBox(),
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.all(8),
-                                  fillColor: fillColor,
-                                  filled: true, // dont forget this line
+                                TextButton(
+                                  onPressed: closeRecording,
+                                  child: const Text('Cancel'),
                                 ),
-                              ),
-                            ),
-
-                            // Second child is button
-                          ])),
+                                TextButton(
+                                  onPressed: handSendVoiceClick,
+                                  child: const Text('Send'),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
               Positioned(

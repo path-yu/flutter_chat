@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:path/path.dart' as path;
@@ -55,4 +56,16 @@ Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {
   }
   EasyLoading.dismiss();
   return result;
+}
+
+Future<String> uploadFile(File file) async {
+  EasyLoading.show(status: 'upload...');
+  final String path = file.path;
+  String fileName = file.uri.pathSegments.last;
+  final mountainsRef = FirebaseStorage.instance.ref('messageVoice/$fileName');
+  Uint8List fileBytes = await file.readAsBytes();
+  await mountainsRef.putData(fileBytes);
+  var url = await mountainsRef.getDownloadURL();
+  EasyLoading.dismiss();
+  return url;
 }

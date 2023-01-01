@@ -43,6 +43,20 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.9.0"
+  audio_session:
+    dependency: transitive
+    description:
+      name: audio_session
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.13"
+  audioplayers:
+    dependency: transitive
+    description:
+      name: audioplayers
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.20.1"
   badges:
     dependency: "direct main"
     description:
@@ -471,6 +485,27 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.4"
+  just_audio:
+    dependency: transitive
+    description:
+      name: just_audio
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.9.31"
+  just_audio_platform_interface:
+    dependency: transitive
+    description:
+      name: just_audio_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.2.0"
+  just_audio_web:
+    dependency: transitive
+    description:
+      name: just_audio_web
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.4.7"
   lints:
     dependency: transitive
     description:
@@ -632,6 +667,48 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.0.5"
+  record:
+    dependency: "direct main"
+    description:
+      name: record
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.4.4"
+  record_linux:
+    dependency: transitive
+    description:
+      name: record_linux
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.4.1"
+  record_macos:
+    dependency: transitive
+    description:
+      name: record_macos
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.2"
+  record_platform_interface:
+    dependency: transitive
+    description:
+      name: record_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.5.0"
+  record_web:
+    dependency: transitive
+    description:
+      name: record_web
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.5.0"
+  record_windows:
+    dependency: transitive
+    description:
+      name: record_windows
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.7.1"
   rxdart:
     dependency: transitive
     description:
@@ -749,6 +826,20 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.1"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "20.4.41"
+  syncfusion_flutter_sliders:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_sliders
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "20.4.41"
   synchronized:
     dependency: transitive
     description:
@@ -833,6 +924,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.13"
+  voice_message_package:
+    dependency: "direct main"
+    description:
+      name: voice_message_package
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.0.74"
   wechat_assets_picker:
     dependency: "direct main"
     description:
