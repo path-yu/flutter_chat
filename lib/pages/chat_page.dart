@@ -17,6 +17,7 @@ import 'package:flutter_chat/pages/chat_setting_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chat_bubble/bubble_type.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
@@ -25,6 +26,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:record/record.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -38,7 +40,7 @@ class ChatPage extends StatefulWidget {
 
 enum MoveDirection { down, up }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   List messageList = [];
   var chatId = '';
   var replyUid = '';
@@ -60,6 +62,7 @@ class _ChatPageState extends State<ChatPage> {
   bool stopRecording = false;
   bool isRecordEnd = false;
   Record? record;
+  int startSeconds = 0;
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -69,11 +72,16 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
+
     if (widget.parentChatData == null) {
       return;
     }
     setState(() {
-      messageList = widget.parentChatData!['messageList'];
+      messageList =
+          handleVoiceMessageList(widget.parentChatData!['messageList']);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        loadMessageListVoiceData();
+      });
       chatId = widget.parentChatData!['chatId'];
       replyUid = widget.parentChatData!['replyUid'];
       isMyRequest = widget.parentChatData!['isMyRequest'];
@@ -82,8 +90,23 @@ class _ChatPageState extends State<ChatPage> {
       var index = data.value.indexWhere((element) => element['id'] == chatId);
       if (index != -1) {
         var target = data.value[index];
+        var newMessageList = target['messageList'] as List<Map>;
+
+        if (newMessageList.length == messageList.length) {
+          return;
+        }
         setState(() {
-          messageList = target['messageList'];
+          if (newMessageList.length > messageList.length) {
+            var diffMessageList = newMessageList.sublist(
+                messageList.length - 1, newMessageList.length - 1);
+            var diffMessageResult = handleVoiceMessageList(diffMessageList);
+            messageList = [...messageList, ...diffMessageResult];
+            Future.delayed(const Duration(milliseconds: 100), () {
+              loadMessageListVoiceData(list: diffMessageResult);
+            });
+          } else {
+            messageList = handleVoiceMessageList(newMessageList);
+          }
         });
       }
     });
@@ -120,6 +143,83 @@ class _ChatPageState extends State<ChatPage> {
     initListenerMessage();
   }
 
+  List<Map> handleVoiceMessageList(List<Map> list) {
+    return list.map((item) {
+      var result = {...item};
+      if (item['type'] == 'voice') {
+        result = {...item, ...createVoiceMessageData()};
+      }
+      return result;
+    }).toList();
+  }
+
+  void loadMessageListVoiceData({List<Map>? list}) async {
+    var voiceMessageList = list ?? getVoiceMessageList();
+    for (var element in voiceMessageList) {
+      if (element['load']) return;
+      if (element['type'] != 'voice') return;
+      final player = AudioPlayer(); // Create a player
+      Future<Duration?> futureDuration;
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      var filePath = prefs.getString(element['content']);
+      if (filePath != null) {
+        futureDuration =
+            player.setAudioSource(AudioSource.uri(Uri.file(filePath)));
+      } else {
+        futureDuration = player.setUrl(
+            // Load a URL
+            element['content'],
+            preload: true);
+      }
+
+      futureDuration.then((value) {
+        setState(() {
+          element['load'] = true;
+          element['player'] = player;
+        });
+        player.positionStream.listen((event) {
+          double currentSliderValue;
+          String currentPlayTimeStr;
+          // play end
+          if (event.inMilliseconds == value!.inMilliseconds) {
+            pause(element['controller'], player, element);
+            currentSliderValue = 100;
+            var lastTime = Duration(seconds: element['time']);
+            currentPlayTimeStr = '${lastTime.inMinutes}:${lastTime.inSeconds}';
+            element['currentPlayDuration'] = lastTime;
+            // calc play progress
+          } else {
+            currentSliderValue =
+                (event.inSeconds / element['time'] * 100).round().toDouble();
+            currentPlayTimeStr = '${event.inMinutes}:${event.inSeconds}';
+          }
+          setState(() {
+            element['currentSliderValue'] = currentSliderValue;
+            element['currentPlayTimeStr'] = currentPlayTimeStr;
+            element['currentPlayDuration'] = event;
+          });
+        });
+      });
+    }
+  }
+
+  createVoiceMessageData() {
+    var controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    return {
+      'pause': true,
+      'currentSliderValue': 0.0,
+      'controller': controller,
+      'animation': Tween<double>(begin: 0.0, end: 1.0).animate(controller),
+      'load': false,
+      'currentPlayTimeStr': "0:0",
+      'currentPlayDuration': const Duration(seconds: 0),
+      'error': null
+    };
+  }
+
   void initListenerMessage() {
     _controller.addListener(() {
       setState(() {
@@ -139,6 +239,12 @@ class _ChatPageState extends State<ChatPage> {
     });
     _scrollController.dispose();
     _controller.dispose();
+    for (var element in messageList) {
+      if (element['type'] == 'voice') {
+        element['controller'].dispose();
+        element['player']?.dispose();
+      }
+    }
     clearTimer();
     super.dispose();
   }
@@ -150,15 +256,21 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  handSendClick() {
+  Map<String, Map<String, dynamic>> createMessageData(
+      {String type = 'text',
+      Map<String, dynamic>? payloadValue,
+      String? content}) {
+    payloadValue ??= {};
+    content ?? _controller.text;
     var now = DateTime.now().millisecondsSinceEpoch;
     // add message
     var baseMessageData = {
-      'content': _controller.text,
-      'type': 'text',
+      'content': content,
+      'type': type,
       'uid': getCurrentUser().uid,
       'targetUid': replyUid,
-      'createTime': now
+      'createTime': now,
+      ...payloadValue,
     };
     var currentUser = context.read<CurrentUser>().value;
     var messageItem = {
@@ -168,14 +280,18 @@ class _ChatPageState extends State<ChatPage> {
       'avatar': currentUser['photoURL'],
       'showCreateTime': formatMessageDate(now)
     };
+
+    return {'baseMessageData': baseMessageData, 'messageItem': messageItem};
+  }
+
+  handSendClick() {
+    var data = createMessageData(content: _controller.text);
     setState(() {
-      messageList.add(messageItem);
+      messageList.add(data['messageItem']);
       _controller.text = '';
     });
-    addMessage(chatId, baseMessageData);
-    Future.delayed(const Duration(milliseconds: 150)).then((value) {
-      scrollToBottom();
-    });
+    addMessage(chatId, data['baseMessageData']!);
+    scrollToBottom();
   }
 
   void addImgMessage(List<String> urlList) {
@@ -203,17 +319,17 @@ class _ChatPageState extends State<ChatPage> {
       messageList = [...messageList, ...messages];
     });
     addMultipleMessage(chatId, baseMessageData);
-    Future.delayed(const Duration(milliseconds: 150)).then((value) {
-      scrollToBottom();
-    });
+    scrollToBottom();
   }
 
   void scrollToBottom() {
     if (_scrollController.hasClients) {
       final position = _scrollController.position.maxScrollExtent;
-      _scrollController.jumpTo(
-        position,
-      );
+      Future.delayed(const Duration(milliseconds: 150)).then((value) {
+        _scrollController.jumpTo(
+          position,
+        );
+      });
     }
   }
 
@@ -230,7 +346,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void startRecording() async {
-    int startSeconds = 0;
+    startSeconds = 0;
     setState(() {
       recordingTime = '0:0';
       stopRecording = false;
@@ -241,27 +357,28 @@ class _ChatPageState extends State<ChatPage> {
     if (await record!.hasPermission()) {
       // Start recording
       await record!.start();
-    }
-    recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (stopRecording) {
-        return;
-      }
-      startSeconds++;
-      if (startSeconds >= maxSeconds) {
-        showToast('Maximum recording time exceeded');
-        isRecordEnd = true;
-        clearTimer();
-      }
-      var time = Duration(seconds: startSeconds);
-      var timeM = (time.inMinutes % 60).toInt();
-      var timeS = time.inSeconds - (timeM * 60);
-      setState(() {
-        recordingTime = '$timeM:$timeS';
+      recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (stopRecording) {
+          return;
+        }
+        startSeconds++;
+        if (startSeconds >= maxSeconds) {
+          startSeconds = 120;
+          showToast('Maximum recording time exceeded');
+          isRecordEnd = true;
+          clearTimer();
+        }
+        var time = Duration(seconds: startSeconds);
+        var timeM = (time.inMinutes % 60).toInt();
+        var timeS = time.inSeconds - (timeM * 60);
+        setState(() {
+          recordingTime = '$timeM:$timeS';
+        });
       });
-    });
-    setState(() {
-      indexedStackIndex = 1;
-    });
+      setState(() {
+        indexedStackIndex = 1;
+      });
+    }
   }
 
   void handSendVoiceClick() async {
@@ -271,8 +388,81 @@ class _ChatPageState extends State<ChatPage> {
       File file = File(path);
       // Todo
       var url = await uploadFile(file);
-      print(url);
+      var data = createMessageData(
+          type: 'voice', payloadValue: {'time': startSeconds}, content: url);
+      setState(() {
+        messageList
+            .add({...data['messageItem'] as Map, ...createVoiceMessageData()});
+        addMessage(chatId, data['baseMessageData']!);
+      });
+      // load audio
+      Future.delayed(const Duration(seconds: 0)).then((value) {
+        loadMessageListVoiceData(list: [messageList.last]);
+      });
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString(url, path);
+      scrollToBottom();
     }
+  }
+
+  void handleVoicePlayClick(
+    Map<dynamic, dynamic> item,
+  ) {
+    var controller = item['controller'] as AnimationController;
+    var player = item['player'] as AudioPlayer;
+    if (item['currentSliderValue'] == 100) {
+      setState(() {
+        item['currentPlayDuration'] = const Duration(seconds: 0);
+        item['currentPlayTimeStr'] = '0:0';
+        item['currentSliderValue'] = 0.0;
+      });
+      player.seek(const Duration(seconds: 0)).then((value) {
+        play(controller, player, item);
+      });
+    } else {
+      if (item['pause']) {
+        play(controller, player, item);
+      } else {
+        pause(controller, player, item);
+      }
+    }
+    // stop other player
+    var messageVoiceList =
+        getVoiceMessageList().where((element) => element != item).toList();
+    for (var element in messageVoiceList) {
+      if (element['player'] != null) {
+        var player = element['player'] as AudioPlayer;
+        var controller = element['controller'] as AnimationController;
+        if (player.playing) {
+          pause(controller, player, element);
+        }
+      }
+    }
+  }
+
+  List getVoiceMessageList() {
+    return messageList.where((element) => element['type'] == 'voice').toList();
+  }
+
+  void play(AnimationController controller, AudioPlayer player, Map item) {
+    controller.forward();
+    item['pause'] = false;
+    player.play();
+  }
+
+  void pause(AnimationController controller, AudioPlayer player, Map item) {
+    controller.reverse();
+    player.pause();
+    item['pause'] = true;
+  }
+
+  void handleSliderChange(double value, int index) {
+    setState(() {
+      var item = messageList[index];
+      item['currentSliderValue'] = value;
+      var currentPlayTime = (value / 100 * item['time']).round();
+      (item['player'] as AudioPlayer).seek(Duration(seconds: currentPlayTime));
+    });
   }
 
   @override
@@ -356,12 +546,134 @@ class _ChatPageState extends State<ChatPage> {
                                   : BubbleType.receiverBubble),
                           child: Container(
                               constraints: BoxConstraints(
-                                maxWidth: screenWidth * 0.7,
+                                maxWidth: item['type'] == 'voice'
+                                    ? screenWidth * 0.45
+                                    : screenWidth * 0.7,
                               ),
-                              child: SelectableText(
-                                item['content'],
-                                style: const TextStyle(color: Colors.white),
-                              )),
+                              child: item['type'] == 'voice'
+                                  ? buildScaleAnimatedSwitcher(item['load']
+                                      ? Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Container(
+                                              width: ScreenUtil().setWidth(30),
+                                              height: ScreenUtil().setWidth(30),
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white30,
+                                              ),
+                                              child: Center(
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      handleVoicePlayClick(
+                                                          item),
+                                                  child: AnimatedIcon(
+                                                    icon: AnimatedIcons
+                                                        .play_pause,
+                                                    progress: item['animation'],
+                                                    size: 25.0,
+                                                    color: Colors.white,
+                                                    semanticLabel: 'Show menu',
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            buildSpace(
+                                                ScreenUtil().setWidth(10)),
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  SliderTheme(
+                                                    data:
+                                                        SliderTheme.of(context)
+                                                            .copyWith(
+                                                      trackShape:
+                                                          const RectangularSliderTrackShape(),
+                                                      thumbShape:
+                                                          const RoundSliderThumbShape(
+                                                              enabledThumbRadius:
+                                                                  5.0),
+                                                      overlayShape:
+                                                          const RoundSliderOverlayShape(
+                                                              overlayRadius:
+                                                                  5.0),
+                                                    ),
+                                                    child: Slider(
+                                                      value: item[
+                                                          'currentSliderValue'],
+                                                      max: 100,
+                                                      inactiveColor:
+                                                          Colors.white24,
+                                                      activeColor: Colors.white,
+                                                      label: item[
+                                                              'currentSliderValue']
+                                                          .round()
+                                                          .toString(),
+                                                      onChanged: (value) =>
+                                                          handleSliderChange(
+                                                              value, index),
+                                                    ),
+                                                  ),
+                                                  Opacity(
+                                                    opacity: 0.6,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                            item[
+                                                                'currentPlayTimeStr'],
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .white)),
+                                                        Text(
+                                                          '${item['time']}s',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                      : Center(
+                                          child: Opacity(
+                                            opacity: 0.6,
+                                            child: AnimatedTextKit(
+                                              totalRepeatCount: 30,
+                                              pause: const Duration(
+                                                  milliseconds: 300),
+                                              animatedTexts: [
+                                                ColorizeAnimatedText(
+                                                  'loading voice...',
+                                                  colors: [
+                                                    Colors.white,
+                                                    Colors.black
+                                                  ],
+                                                  textStyle: const TextStyle(
+                                                      fontSize: 16),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ))
+                                  : SelectableText(
+                                      item['content'].toString(),
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    )),
                         );
                       }
                       return Container(

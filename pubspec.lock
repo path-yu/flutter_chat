@@ -15,6 +15,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.8.0+1"
+  animated_text_kit:
+    dependency: "direct main"
+    description:
+      name: animated_text_kit
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.2.2"
   animations:
     dependency: transitive
     description:
@@ -50,13 +57,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.13"
-  audioplayers:
-    dependency: transitive
-    description:
-      name: audioplayers
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.20.1"
   badges:
     dependency: "direct main"
     description:
@@ -486,7 +486,7 @@ packages:
     source: hosted
     version: "0.6.4"
   just_audio:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: just_audio
       url: "https://pub.flutter-io.cn"
@@ -826,20 +826,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.1"
-  syncfusion_flutter_core:
-    dependency: transitive
-    description:
-      name: syncfusion_flutter_core
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "20.4.41"
-  syncfusion_flutter_sliders:
-    dependency: transitive
-    description:
-      name: syncfusion_flutter_sliders
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "20.4.41"
   synchronized:
     dependency: transitive
     description:
@@ -924,13 +910,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.13"
-  voice_message_package:
-    dependency: "direct main"
-    description:
-      name: voice_message_package
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.74"
   wechat_assets_picker:
     dependency: "direct main"
     description:

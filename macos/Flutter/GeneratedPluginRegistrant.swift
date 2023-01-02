@@ -6,7 +6,6 @@ import FlutterMacOS
 import Foundation
 
 import audio_session
-import audioplayers
 import cloud_firestore
 import dynamic_color
 import firebase_auth
@@ -22,7 +21,6 @@ import sqflite
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AudioSessionPlugin.register(with: registry.registrar(forPlugin: "AudioSessionPlugin"))
-  AudioplayersPlugin.register(with: registry.registrar(forPlugin: "AudioplayersPlugin"))
   FLTFirebaseFirestorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseFirestorePlugin"))
   DynamicColorPlugin.register(with: registry.registrar(forPlugin: "DynamicColorPlugin"))
   FLTFirebaseAuthPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseAuthPlugin"))

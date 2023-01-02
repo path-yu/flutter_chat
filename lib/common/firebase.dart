@@ -268,13 +268,16 @@ Future<Map<String, dynamic>> handleChatData(
       'isMyRequest': isMyRequest,
       'userName': isMyRequest ? data['userName'] : data['targetUserName'],
       'avatar': isMyRequest ? data['userPhotoURL'] : data['targetUserPhotoURL'],
-      'showCreateTime': formatMessageDate(message['createTime'])
+      'showCreateTime': formatMessageDate(message['createTime']),
     };
   }).toList();
   if (!data['messageList'].isEmpty) {
     var lastMessage = data['messageList'][messages.length - 1];
-    data['lastMessage'] =
-        lastMessage['type'] == 'pic' ? '[picture]' : lastMessage['content'];
+    data['lastMessage'] = lastMessage['type'] == 'pic'
+        ? '[picture]'
+        : lastMessage['type'] == 'voice'
+            ? '[voice]'
+            : lastMessage['content'];
     data['showAvatar'] = lastMessage['avatar'];
     data['showUserName'] = lastMessage['userName'];
   } else {
