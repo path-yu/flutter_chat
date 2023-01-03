@@ -1,8 +1,10 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
+import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -15,6 +17,8 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+  Color? screenPickerColor;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,8 +36,12 @@ class _SettingPageState extends State<SettingPage> {
                   var brightnessKey =
                       context.read<CurrentBrightness>().brightnessKey;
                   var result = await showConfirmationDialog(
-                      title: 'select mode ',
+                      barrierDismissible: false,
+                      fullyCapitalizedForMaterial: false,
+                      title: 'Select mode ',
                       context: context,
+                      cancelLabel: 'Cancel',
+                      okLabel: 'Ok',
                       initialSelectedActionKey: brightnessKey,
                       actions: [
                         const AlertDialogAction(
@@ -65,6 +73,51 @@ class _SettingPageState extends State<SettingPage> {
                   Icons.design_services,
                 ),
                 title: const Text('useMaterial3'),
+              ),
+              SettingsTile.navigation(
+                leading: const Icon(
+                  Icons.color_lens,
+                ),
+                title: const Text('theme color'),
+                value: Text(context.watch<CurrentPrimarySwatch>().colorName),
+                onPressed: (context) async {
+                  var result = await showBaseAlertDialog(
+                    contentWidget: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ColorPicker(
+                          // Use the screenPickerColor as start color.
+                          color: Color(
+                              context.read<CurrentPrimarySwatch>().color.value),
+                          // Update the screenPickerColor using the callback.
+                          onColorChanged: (Color color) {
+                            screenPickerColor = color;
+                          },
+                          pickersEnabled: const {ColorPickerType.accent: false},
+                          width: 45,
+                          height: 45,
+                          showMaterialName: true,
+                          heading: Text(
+                            'Select color',
+                            style: Theme.of(context).textTheme.headline6,
+                          ),
+                          subheading: Text(
+                            'Select color shade',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                    onConfirm: () {
+                      if (screenPickerColor != null) {
+                        context
+                            .read<CurrentPrimarySwatch>()
+                            .changeColor(screenPickerColor!);
+                        Navigator.pop(context);
+                      }
+                    },
+                  );
+                },
               ),
             ],
           ),

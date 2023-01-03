@@ -40,6 +40,7 @@ dependencies:
   record: ^4.4.4
   just_audio: ^0.9.31
   animated_text_kit: ^4.2.2
+  flex_color_picker: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

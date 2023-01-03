@@ -1,11 +1,12 @@
 import 'dart:ui';
 
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/components/color.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
+import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/router/index.dart';
@@ -27,6 +28,7 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? brightnessValue = prefs.getString('currentBrightness');
   bool? useMaterial3Value = prefs.getBool(currentUseMaterial3Key);
+  int? primarySwatchValue = prefs.getInt(currentPrimarySwatchKey);
   if (FirebaseAuth.instance.currentUser != null) {
     searchUserByEmail(getCurrentUser().email!).then((user) {
       currentUser.setCurrentUser(user.docs[0].data());
@@ -35,11 +37,15 @@ void main() async {
   var currentBrightness =
       CurrentBrightness(brightnessValue ?? 'light', window.platformBrightness);
   var currentSwitch = CurrentSwitch(useMaterial3Value ?? true);
+  var currentPrimarySwatch = CurrentPrimarySwatch(primarySwatchValue != null
+      ? ColorTools.createPrimarySwatch(Color(primarySwatchValue))
+      : Colors.blue);
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => currentUser),
       ChangeNotifierProvider(create: (_) => currentBrightness),
       ChangeNotifierProvider(create: (_) => currentSwitch),
+      ChangeNotifierProvider(create: (_) => currentPrimarySwatch),
     ],
     child: const MyApp(),
   ));
@@ -76,8 +82,8 @@ class MyApp extends StatelessWidget {
               builder: EasyLoading.init(),
               theme: ThemeData(
                   useMaterial3: context.watch<CurrentSwitch>().useMaterial3,
-                  primarySwatch: primaryColor,
-                  brightness: context.watch<CurrentBrightness>().value),
+                  brightness: context.watch<CurrentBrightness>().value,
+                  primarySwatch: context.watch<CurrentPrimarySwatch>().color),
               onGenerateRoute: (RouteSettings settings) {
                 // 检查路由是否需要拦截
                 if (settings.name != '/login' || settings.name != 'register') {

@@ -16,6 +16,7 @@ import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat_setting_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
+import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -761,9 +762,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                       final List<AssetEntity>? result =
                                           await AssetPicker.pickAssets(
                                         context,
-                                        pickerConfig: const AssetPickerConfig(
+                                        pickerConfig: AssetPickerConfig(
                                             maxAssets: 3,
-                                            themeColor: primaryColor),
+                                            themeColor: context
+                                                .read<CurrentPrimarySwatch>()
+                                                .color),
                                       );
                                       if (result != null) {
                                         var urlList =

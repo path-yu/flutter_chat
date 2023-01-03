@@ -92,7 +92,7 @@ TextStyle subtitleTextStyle = const TextStyle(color: Color(0xff737373));
 
 Future<bool?> showBaseAlertDialog(
     {required Widget contentWidget,
-    required String title,
+    String? title,
     bool? showCancel = true,
     required Function? onConfirm,
     Function? onClose}) {
@@ -122,11 +122,14 @@ Future<bool?> showBaseAlertDialog(
         }
         return AlertDialog(
           content: contentWidget,
+          contentPadding: const EdgeInsets.all(0),
           actionsAlignment: MainAxisAlignment.center,
-          title: Text(
-            title,
-            textAlign: TextAlign.center,
-          ),
+          title: title != null
+              ? Text(
+                  title,
+                  textAlign: TextAlign.center,
+                )
+              : null,
           actions: actions,
         );
       });
