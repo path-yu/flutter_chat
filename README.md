@@ -28,3 +28,9 @@ samples, guidance on mobile development, and a full API reference.
 ![login.png](https://github.com/path-yu/flutter_chat/blob/main/img/login.png)
 
 ![newFriends.png](https://github.com/path-yu/flutter_chat/blob/main/img/newFriends.png)
+
+## build apk
+
+```shell
+flutter build apk --obfuscate --split-debug-info=splitMap --target-platform android-arm,android-arm64,android-x64 --split-per-abi
+```

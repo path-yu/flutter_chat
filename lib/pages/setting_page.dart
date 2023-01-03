@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
+import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:provider/provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -54,6 +55,16 @@ class _SettingPageState extends State<SettingPage> {
                           ? 'dark'
                           : 'light');
                 },
+              ),
+              SettingsTile.switchTile(
+                onToggle: (value) {
+                  context.read<CurrentSwitch>().changeUseMaterial3(value);
+                },
+                initialValue: context.watch<CurrentSwitch>().useMaterial3,
+                leading: const Icon(
+                  Icons.design_services,
+                ),
+                title: const Text('useMaterial3'),
               ),
             ],
           ),
