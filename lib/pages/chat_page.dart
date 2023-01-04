@@ -503,6 +503,12 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                       var item = messageList[index];
                       var isMyRequest = item['isMyRequest'];
                       StatelessWidget bubble;
+                      Color bubbleBackgroundColor = isMyRequest
+                          ? context.read<CurrentPrimarySwatch>().color
+                          : context
+                              .read<CurrentPrimarySwatch>()
+                              .color
+                              .withOpacity(0.5);
                       if (item['type'] == 'pic') {
                         bubble = GestureDetector(
                           onTap: () {
@@ -535,8 +541,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                         );
                       } else {
                         bubble = ChatBubble(
-                          backGroundColor:
-                              isMyRequest ? Colors.blueAccent : Colors.blue,
+                          backGroundColor: bubbleBackgroundColor,
                           shadowColor:
                               context.watch<CurrentBrightness>().isDarkMode
                                   ? darkMainColor

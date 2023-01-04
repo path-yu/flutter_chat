@@ -8,6 +8,7 @@ class CurrentPrimarySwatch with ChangeNotifier {
   MaterialColor color;
   CurrentPrimarySwatch(this.color);
   String get colorName => ColorTools.materialName(color);
+
   changeColor(Color value) async {
     color = ColorTools.createPrimarySwatch(value);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
