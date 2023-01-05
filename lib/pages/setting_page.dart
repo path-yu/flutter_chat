@@ -26,11 +26,11 @@ class _SettingPageState extends State<SettingPage> {
       body: SettingsList(
         sections: [
           SettingsSection(
-            title: const Text('theme'),
+            title: const Text('Theme'),
             tiles: <SettingsTile>[
               SettingsTile.navigation(
                 leading: const Icon(Icons.brightness_6_outlined),
-                title: const Text('brightness'),
+                title: const Text('Brightness'),
                 value: Text(context.watch<CurrentBrightness>().brightness),
                 onPressed: (_) async {
                   var brightnessKey =
@@ -72,13 +72,13 @@ class _SettingPageState extends State<SettingPage> {
                 leading: const Icon(
                   Icons.design_services,
                 ),
-                title: const Text('useMaterial3'),
+                title: const Text('UseMaterial3'),
               ),
               SettingsTile.navigation(
                 leading: const Icon(
                   Icons.color_lens,
                 ),
-                title: const Text('theme color'),
+                title: const Text('Theme color'),
                 value: Text(context.watch<CurrentPrimarySwatch>().colorName),
                 onPressed: (context) async {
                   var result = await showBaseAlertDialog(
@@ -122,7 +122,7 @@ class _SettingPageState extends State<SettingPage> {
             ],
           ),
           SettingsSection(
-            title: const Text('account'),
+            title: const Text('Account'),
             tiles: <SettingsTile>[
               SettingsTile(
                 title: const Text('Sign out'),
@@ -132,6 +132,14 @@ class _SettingPageState extends State<SettingPage> {
                     Navigator.popAndPushNamed(context, '/login',
                         arguments: true);
                   });
+                },
+              ),
+              SettingsTile(
+                title: const Text('Change password'),
+                leading: const Icon(Icons.lock),
+                onPressed: (_) {
+                  Navigator.popAndPushNamed(context, '/changePassword',
+                      arguments: true);
                 },
               )
             ],

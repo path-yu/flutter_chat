@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String email = '2802872190@qq.com';
+  String email = '1974675011@qq.com';
   String password = '123456';
   bool loginButtonLoading = false;
 
@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage>
     return WillPopScope(
       onWillPop: () async {
         if (args != null) {
-          return false;
+          return ModalRoute.of(context)!.isFirst ? true : false;
         }
         return true;
       },
