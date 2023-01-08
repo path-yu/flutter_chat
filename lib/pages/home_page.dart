@@ -6,7 +6,6 @@ import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:provider/provider.dart';
-import 'package:uni_links/uni_links.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,24 +57,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         });
       }
     });
-    initUniLinks();
+    // initUniLinks();
   }
 
-  Future<void> initUniLinks() async {
-    print('init');
-    // ... check initialLink
+  // Future<void> initUniLinks() async {
+  //   print('init');
+  //   // ... check initialLink
 
-    // Attach a listener to the stream
-    _sub = linkStream.listen((String? link) {
-      print('openAPPPPP');
-      print(link);
-      // Parse the link and warn the user, if it is not correct
-    }, onError: (err) {
-      // Handle exception by warning the user their action did not succeed
-    });
+  //   // Attach a listener to the stream
+  //   _sub = linkStream.listen((String? link) {
+  //     print('openAPPPPP');
+  //     print(link);
+  //     // Parse the link and warn the user, if it is not correct
+  //   }, onError: (err) {
+  //     // Handle exception by warning the user their action did not succeed
+  //   });
 
-    // NOTE: Don't forget to call _sub.cancel() in dispose()
-  }
+  //   // NOTE: Don't forget to call _sub.cancel() in dispose()
+  // }
 
   @override
   Widget build(BuildContext context) {

@@ -41,8 +41,10 @@ dependencies:
   just_audio: ^0.9.31
   animated_text_kit: ^4.2.2
   flex_color_picker: ^3.0.0
-  firebase_dynamic_links: ^5.0.11
-  uni_links: ^0.5.1
+  # firebase_dynamic_links: ^5.0.11
+  # uni_links: ^0.5.1
+  font_awesome_flutter: ^10.3.0
+  google_sign_in: ^5.4.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
