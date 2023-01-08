@@ -23,7 +23,7 @@ class BaseTextFormFiled extends StatefulWidget {
       this.onEditingComplete,
       this.labelText,
       this.initialValue = '',
-      this.maxLines,
+      this.maxLines = 1,
       this.textInputAction,
       this.keyboardType});
 

@@ -34,3 +34,12 @@ samples, guidance on mobile development, and a full API reference.
 ```shell
 flutter build apk --obfuscate --split-debug-info=splitMap --target-platform android-arm,android-arm64,android-x64 --split-per-abi
 ```
+
+```
+
+./adb shell am start -a android.intent.action.VIEW \
+    -c android.intent.category.BROWSABLE \
+    -d "http://flutterbooksample.com/book/1" \
+    com.example.flutter_chat
+./adb shell am start -a android.intent.action.VIEW -c android.intent.category.BROWSABLE -d "http://flutterbooksample.com/book/1" com.example.flutter_chat
+```
