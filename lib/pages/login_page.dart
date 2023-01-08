@@ -18,8 +18,8 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String email = '1974675011@qq.com';
-  String password = '123456';
+  String email = '';
+  String password = '';
   bool loginButtonLoading = false;
 
   @override

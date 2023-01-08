@@ -14,6 +14,9 @@ class ForgetPasswordPage extends StatefulWidget {
 
 class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
   resetPassword() async {
+    if (email.isEmpty) {
+      return showToast('Email is not empty!');
+    }
     await FirebaseAuth.instance
         .sendPasswordResetEmail(email: email)
         .then((value) {
@@ -21,7 +24,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
     });
   }
 
-  String email = '1974675011@qq.com';
+  String email = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +34,10 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'We need to verify your email',
+            style: TextStyle(
+                fontSize: ScreenUtil().setSp(18), fontWeight: FontWeight.bold),
           ),
           SizedBox(
             height: ScreenUtil().setHeight(20),
@@ -44,12 +49,6 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
               obscureText: true,
               onChanged: (value) {
                 email = value!;
-              },
-              validator: (value) {
-                if (value!.isEmpty || value.length < 6) {
-                  return 'Password should be at least 6 characters';
-                }
-                return null;
               },
               hintText: 'your email',
             ),
