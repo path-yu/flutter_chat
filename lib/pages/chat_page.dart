@@ -876,7 +876,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                 ],
               ),
               Positioned(
-                  bottom: ScreenUtil().setHeight(30),
+                  bottom: ScreenUtil().setHeight(40),
                   right: ScreenUtil().setWidth(20),
                   child: !showToBottomBtn
                       ? Container()

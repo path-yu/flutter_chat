@@ -177,11 +177,10 @@ class _HomeContactsState extends State<HomeContacts> {
             child: Container(
               margin: EdgeInsets.all(ScreenUtil().setWidth(10)),
               child: ClipOval(
-                child: Image.network(
-                  context.watch<CurrentUser>().value['photoURL'],
-                  fit: BoxFit.fill,
-                  height: ScreenUtil().setHeight(40),
-                ),
+                child: buildBaseImage(
+                    width: ScreenUtil().setWidth(40),
+                    height: ScreenUtil().setHeight(40),
+                    url: context.watch<CurrentUser>().value['photoURL']),
               ),
             ),
           )),
