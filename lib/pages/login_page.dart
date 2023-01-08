@@ -99,6 +99,7 @@ class _LoginPageState extends State<LoginPage>
       'uid': userCredential.user!.uid,
       'chats': []
     };
+    db.collection(UsersDbKey).doc(userCredential.user!.uid).set(data);
   }
 
   void signWithGithub() {
@@ -108,7 +109,6 @@ class _LoginPageState extends State<LoginPage>
       FirebaseAuth.instance
           .signInWithProvider(githubProvider)
           .then((userCredential) async {
-        print(userCredential.user!.photoURL);
         var user = await searchUserByEmail(userCredential.user!.email!);
         if (user.docs.isEmpty) {
           // saveUser(userCredential);
