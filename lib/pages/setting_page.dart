@@ -129,8 +129,8 @@ class _SettingPageState extends State<SettingPage> {
                 leading: const Icon(Icons.logout),
                 onPressed: (_) {
                   FirebaseAuth.instance.signOut().then((value) {
-                    Navigator.popAndPushNamed(context, '/login',
-                        arguments: true);
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/login', (route) => false);
                   });
                 },
               ),

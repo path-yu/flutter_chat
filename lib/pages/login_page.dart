@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -49,112 +50,112 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     super.build(context);
     final args = ModalRoute.of(context)!.settings.arguments;
-    return WillPopScope(
-      onWillPop: () async {
-        if (args != null) {
-          return ModalRoute.of(context)!.isFirst ? true : false;
-        }
-        return true;
-      },
-      child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: buildAppBar('Welcome to login', context,
-              showBackButton:
-                  args != null ? false : Navigator.of(context).canPop()),
-          body: Container(
-            padding: EdgeInsets.all(ScreenUtil().setWidth(20)),
-            margin: EdgeInsets.only(top: ScreenUtil().setHeight(20)),
-            child: Column(
-              children: [
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _emailController,
-                        validator: (value) {
-                          if (value!.isEmpty || !value.contains('@')) {
-                            return 'Please enter a valid email address';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            suffixIcon: email.isNotEmpty
-                                ? buildClearInputIcon((() {
-                                    _emailController.clear();
-                                  }))
-                                : null,
-                            hintText: 'type email',
-                            prefixIcon: buildIcon(Icons.email)),
-                      ),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        validator: (value) {
-                          if (value!.isEmpty || value.length < 6) {
-                            return 'Password should be at least 6 characters';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            suffixIcon: password.isNotEmpty
-                                ? buildClearInputIcon((() {
-                                    _passwordController.clear();
-                                  }))
-                                : null,
-                            hintText: ' type password',
-                            prefixIcon: buildIcon(Icons.lock)),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.only(top: ScreenUtil().setWidth(20)),
-                    child: ElevatedButton(
-                        onPressed: loginButtonLoading
-                            ? null
-                            : () async {
-                                if (_formKey.currentState!.validate()) {
-                                  setState(() => loginButtonLoading = true);
-                                  try {
-                                    await FirebaseAuth.instance
-                                        .signInWithEmailAndPassword(
-                                            email: email, password: password);
-                                    showMessage(
-                                        context: context,
-                                        title: 'login successful');
-                                    Navigator.pushNamed(context, '/');
-                                  } on FirebaseAuthException catch (e) {
-                                    showMessage(
-                                      context: context,
-                                      title: e.message!,
-                                    );
-                                  }
-                                  setState(() => loginButtonLoading = false);
-                                  setState(() => loginButtonLoading = false);
-                                }
-                              },
-                        child: loginButtonLoading
-                            ? buttonLoading
-                            : const Text('Sign in'))),
-                SizedBox(
-                  height: ScreenUtil().setHeight(10),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: buildAppBar('Welcome to login', context,
+            showBackButton: Navigator.of(context).canPop()),
+        body: Container(
+          padding: EdgeInsets.all(ScreenUtil().setWidth(20)),
+          margin: EdgeInsets.only(top: ScreenUtil().setHeight(20)),
+          child: Column(
+            children: [
+              Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    const Text('not yet registered?'),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/register');
-                        },
-                        child: const Text('Click to register'))
+                    TextFormField(
+                      controller: _emailController,
+                      validator: (value) {
+                        if (value!.isEmpty || !value.contains('@')) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          suffixIcon: email.isNotEmpty
+                              ? buildClearInputIcon((() {
+                                  _emailController.clear();
+                                }))
+                              : null,
+                          hintText: 'type email',
+                          prefixIcon: buildIcon(Icons.email)),
+                    ),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      validator: (value) {
+                        if (value!.isEmpty || value.length < 6) {
+                          return 'Password should be at least 6 characters';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          suffixIcon: password.isNotEmpty
+                              ? buildClearInputIcon((() {
+                                  _passwordController.clear();
+                                }))
+                              : null,
+                          hintText: ' type password',
+                          prefixIcon: buildIcon(Icons.lock)),
+                    ),
                   ],
-                )
-              ],
-            ),
-          )),
-    );
+                ),
+              ),
+              Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(top: ScreenUtil().setWidth(20)),
+                  child: ElevatedButton(
+                      onPressed: loginButtonLoading
+                          ? null
+                          : () async {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() => loginButtonLoading = true);
+                                try {
+                                  await FirebaseAuth.instance
+                                      .signInWithEmailAndPassword(
+                                          email: email, password: password);
+                                  showMessage(
+                                      context: context,
+                                      title: 'login successful');
+                                  Navigator.pushNamed(context, '/');
+                                } on FirebaseAuthException catch (e) {
+                                  showOkAlertDialog(
+                                      context: context, message: e.message!);
+                                }
+                                setState(() => loginButtonLoading = false);
+                                setState(() => loginButtonLoading = false);
+                              }
+                            },
+                      child: loginButtonLoading
+                          ? buttonLoading
+                          : const Text('Sign in'))),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Opacity(
+                    opacity: 0.6,
+                    child: Text('not yet registered?',
+                        style: TextStyle(fontSize: ScreenUtil().setSp(12))),
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text(
+                        'Click to register',
+                        style: TextStyle(fontSize: ScreenUtil().setSp(12)),
+                      ))
+                ],
+              ),
+              TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'Forget password',
+                    style: TextStyle(fontSize: ScreenUtil().setSp(12)),
+                  )),
+            ],
+          ),
+        ));
   }
 }

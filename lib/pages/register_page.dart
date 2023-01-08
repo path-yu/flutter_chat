@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/defaultData.dart';
@@ -133,6 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       .collection(UsersDbKey)
                                       .doc(userCredential.user!.uid)
                                       .set(data);
+                                  // ignore: use_build_context_synchronously
                                   context
                                       .read<CurrentUser>()
                                       .setCurrentUser(data);
@@ -148,10 +150,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   });
                                   setState(() => loginButtonLoading = false);
                                 } on FirebaseException catch (e) {
-                                  showMessage(
-                                    context: context,
-                                    title: e.message!,
-                                  );
+                                  showOkAlertDialog(
+                                      context: context, message: e.message!);
                                   setState(() => loginButtonLoading = false);
                                 }
                               }
