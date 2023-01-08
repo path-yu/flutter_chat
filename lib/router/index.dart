@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat/pages/account/forget_password_page.dart';
 import 'package:flutter_chat/pages/add_contact_page.dart';
 import 'package:flutter_chat/pages/change_password_page.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_chat/pages/setting_page.dart';
 final baseRoutes = {
   '/login': (BuildContext context) => const LoginPage(),
   '/register': (BuildContext context) => const RegisterPage(),
+  '/forget': (BuildContext context) => const ForgetPasswordPage(),
 };
 final authRoutes = {
   '/': (BuildContext context) => const HomePage(),
