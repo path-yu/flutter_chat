@@ -396,6 +396,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         messageList
             .add({...data['messageItem'] as Map, ...createVoiceMessageData()});
         addMessage(chatId, data['baseMessageData']!);
+        Future.delayed(const Duration(milliseconds: 300)).then((value) {
+          _scrollController.jumpTo(
+            _scrollController.position.maxScrollExtent,
+          );
+        });
       });
       // load audio
       Future.delayed(const Duration(seconds: 0)).then((value) {
@@ -403,7 +408,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       });
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString(url, path);
-      scrollToBottom();
     }
   }
 
