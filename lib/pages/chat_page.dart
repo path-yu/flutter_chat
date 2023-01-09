@@ -99,7 +99,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         setState(() {
           if (newMessageList.length > messageList.length) {
             var diffMessageList = newMessageList.sublist(
-                messageList.length - 1, newMessageList.length - 1);
+                messageList.length - 1, newMessageList.length);
             var diffMessageResult = handleVoiceMessageList(diffMessageList);
             messageList = [...messageList, ...diffMessageResult];
             Future.delayed(const Duration(milliseconds: 100), () {

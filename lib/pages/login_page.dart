@@ -200,7 +200,6 @@ class _LoginPageState extends State<LoginPage>
                                       context: context, message: e.message!);
                                 }
                                 setState(() => loginButtonLoading = false);
-                                setState(() => loginButtonLoading = false);
                               }
                             },
                       child: loginButtonLoading
