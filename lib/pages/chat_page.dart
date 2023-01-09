@@ -578,8 +578,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                               CrossAxisAlignment.end,
                                           children: [
                                             Container(
-                                              width: ScreenUtil().setWidth(30),
-                                              height: ScreenUtil().setWidth(30),
+                                              width: ScreenUtil().setWidth(25),
+                                              height: ScreenUtil().setWidth(25),
                                               decoration: const BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: Colors.white30,
@@ -593,7 +593,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                     icon: AnimatedIcons
                                                         .play_pause,
                                                     progress: item['animation'],
-                                                    size: 25.0,
+                                                    size: 20.0,
                                                     color: Colors.white,
                                                     semanticLabel: 'Show menu',
                                                   ),
@@ -650,16 +650,22 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                         Text(
                                                             item[
                                                                 'currentPlayTimeStr'],
-                                                            style:
-                                                                const TextStyle(
-                                                                    color: Colors
-                                                                        .white)),
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize:
+                                                                    ScreenUtil()
+                                                                        .setSp(
+                                                                            12))),
                                                         Text(
                                                           '${item['time']}s',
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white),
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize:
+                                                                  ScreenUtil()
+                                                                      .setSp(
+                                                                          12)),
                                                         )
                                                       ],
                                                     ),
