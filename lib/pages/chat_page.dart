@@ -64,6 +64,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   bool isRecordEnd = false;
   Record? record;
   int startSeconds = 0;
+  final Duration _duration = const Duration(milliseconds: 150);
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -466,8 +467,18 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
   }
 
+  void handleKeyboardOpen() {
+    var keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
+    if (keyboardVisible) {
+      Future.delayed(const Duration(milliseconds: 150)).then((value) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    handleKeyboardOpen();
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     var fillColor = context.watch<CurrentBrightness>().isDarkMode
