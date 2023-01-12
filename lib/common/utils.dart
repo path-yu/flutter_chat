@@ -15,7 +15,7 @@ String formatChatDate(int timestamp) {
       return formatDate(date, [mm, '-', dd]);
     }
   } else {
-    return formatDate(date, [yyyy, '-', mm, '-', dd]);
+    return formatDate(date, [dd, '-', mm, '-', yyyy]);
   }
 }
 
@@ -28,7 +28,7 @@ String formatMessageDate(int timestamp) {
   } else if (isYesterday(date)) {
     return 'yesterday $timeStr';
   } else {
-    return '${formatDate(date, [yyyy, '-', mm, '-', dd])} $timeStr';
+    return '${formatDate(date, [dd, '-', mm, '-', yyyy])} $timeStr';
   }
 }
 

@@ -48,7 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
         appBar:
             buildAppBar('Welcome to register', context, showBackButton: true),
         body: Container(
-          padding: EdgeInsets.all(ScreenUtil().setWidth(20)),
+          padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
           margin: EdgeInsets.only(top: ScreenUtil().setHeight(20)),
           child: Column(
             children: [
@@ -70,7 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   _emailController.clear();
                                 }))
                               : null,
-                          hintText: 'type email',
+                          hintText: 'Type email',
                           prefixIcon: buildIcon(Icons.email)),
                     ),
                     TextFormField(
@@ -88,7 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   _passwordController.clear();
                                 }))
                               : null,
-                          hintText: 'type password',
+                          hintText: 'Type password',
                           prefixIcon: buildIcon(Icons.lock)),
                     ),
                   ],
