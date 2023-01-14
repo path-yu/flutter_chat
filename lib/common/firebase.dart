@@ -286,8 +286,7 @@ Future<Map<String, dynamic>> handleChatData(
     data['showUserName'] =
         data['isMyRequest'] ? data['targetUserName'] : data['userName'];
   }
-  data['appbarTitle'] =
-      data['isMyRequest'] ? data['targetUserName'] : data['userName'];
+  data['appbarTitle'] = data['targetUserName'];
   data.remove('messages');
   data.remove('targetMessages');
   return data;
