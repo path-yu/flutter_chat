@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
@@ -23,7 +25,7 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
   bool showSendBtn = true;
   String message = '';
   List messageList = [];
-  var apiKey = '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';
+  var apiKey = '';
   String? chatId;
   bool sendLoading = false;
   final TextEditingController _editingController = TextEditingController();
@@ -69,6 +71,13 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
         _scrollController.jumpTo(await getScrollOffset());
       }
     });
+    setupRemoteConfig();
+  }
+
+  setupRemoteConfig() async {
+    var remoteConfig = FirebaseRemoteConfig.instance;
+    await remoteConfig.fetchAndActivate();
+    apiKey = remoteConfig.getString('chatAPIKey');
   }
 
   void scrollToBottom() {
@@ -83,6 +92,10 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
   }
 
   Future<Response<dynamic>> requestApi(String prompt) async {
+    if (apiKey.isEmpty) {
+      showToast('apiKey is Empty');
+      return throw Exception('apiKey is Empty');
+    }
     var response = await Dio().post('https://api.openai.com/v1/completions',
         data: {
           'model': 'text-davinci-003',
@@ -392,7 +405,6 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
                             decoration: const InputDecoration(
                               hintText: 'Your question',
                               border: InputBorder.none,
-                              isDense: true,
 
                               filled: true, // dont forget this line
                             ),
