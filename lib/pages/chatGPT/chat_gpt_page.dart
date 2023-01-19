@@ -298,7 +298,7 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
                                         fontWeight: FontWeight.normal,
                                         fontSize: ScreenUtil().setSp(12)),
                                   );
-                                  var resultEle = ListTile(
+                                  Widget resultEle = ListTile(
                                     leading: isQuestion
                                         ? ClipOval(
                                             child: buildBaseImage(
@@ -347,11 +347,18 @@ class _ChatGPTPageState extends State<ChatGPTPage> {
                                           fontSize: ScreenUtil().setSp(10)),
                                     ),
                                   );
+
                                   return item['status'] == 2
                                       ? Column(
                                           children: [
                                             resultEle,
-                                            SizedBox(
+                                            Container(
+                                              margin: EdgeInsets.only(
+                                                  bottom: index ==
+                                                          messageList.length - 1
+                                                      ? ScreenUtil()
+                                                          .setHeight(15)
+                                                      : 0),
                                               height: ScreenUtil().setWidth(25),
                                               child: ElevatedButton(
                                                   onPressed: () =>
