@@ -17,6 +17,8 @@ samples, guidance on mobile development, and a full API reference.
 
 ## screenshot
 
+![newFriends.png](https://github.com/path-yu/flutter_chat/blob/main/img/chatGPT.png)
+
 ![addContact.png](https://github.com/path-yu/flutter_chat/blob/main/img/addContact.png)
 
 ![chat.png](https://github.com/path-yu/flutter_chat/blob/main/img/chat.png)
