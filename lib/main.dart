@@ -66,8 +66,11 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  void init() async {}
+
   @override
   Widget build(BuildContext context) {
+    // init();
     return ScreenUtilInit(
         designSize: const Size(360, 690),
         minTextAdapt: true,
@@ -81,9 +84,10 @@ class MyApp extends StatelessWidget {
               initialRoute: '/',
               builder: EasyLoading.init(),
               theme: ThemeData(
-                  useMaterial3: context.watch<CurrentSwitch>().useMaterial3,
-                  brightness: context.watch<CurrentBrightness>().value,
-                  primarySwatch: context.watch<CurrentPrimarySwatch>().color),
+                useMaterial3: context.watch<CurrentSwitch>().useMaterial3,
+                brightness: context.watch<CurrentBrightness>().value,
+                colorSchemeSeed: context.watch<CurrentPrimarySwatch>().color,
+              ),
               onGenerateRoute: (RouteSettings settings) {
                 // 检查路由是否需要拦截
                 if (settings.name != '/login' || settings.name != 'register') {

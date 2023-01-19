@@ -10,6 +10,8 @@ var db = FirebaseFirestore.instance;
 const UsersDbKey = 'Users';
 const NOTIFICATION = "notification";
 const ChatsKey = 'chats';
+String chatGPTDbKey = 'chat_gpt_messages';
+
 addContactsNotification(
     String email, String remarks, BuildContext context) async {
   // if not logged in

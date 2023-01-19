@@ -8,8 +8,11 @@ import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/provider/current_primary_swatch.dart';
+import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -109,6 +112,20 @@ class _HomeMessagesState extends State<HomeMessages> {
       ),
       appBar: buildAppBar('Messages', context,
           showBackButton: false,
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/chatGPT');
+                },
+                icon: SvgPicture.asset(
+                  'assets/chat_gpt.svg',
+                  width: ScreenUtil().setWidth(20),
+                  height: ScreenUtil().setWidth(20),
+                  color: context.watch<CurrentSwitch>().useMaterial3
+                      ? context.watch<CurrentPrimarySwatch>().color
+                      : Colors.white,
+                ))
+          ],
           leading: GestureDetector(
             onTap: () {
               _scaffoldKey.currentState!.openDrawer();
@@ -132,53 +149,61 @@ class _HomeMessagesState extends State<HomeMessages> {
                     await initGetChatData();
                     return;
                   },
-                  child: ListView.separated(
-                    itemBuilder: (context, index) {
-                      var item = chatList[index];
-                      return ListTile(
-                        onTap: () {
-                          // Obtain shared preferences.
-                          SharedPreferences.getInstance().then((prefs) {
-                            var offset = prefs.getString(item['id']);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatPage(
-                                  parentChatData: item,
-                                  initialScrollOffset:
-                                      offset != null ? double.parse(offset) : 0,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: ListView.separated(
+                          itemBuilder: (context, index) {
+                            var item = chatList[index];
+                            return ListTile(
+                              onTap: () {
+                                // Obtain shared preferences.
+                                SharedPreferences.getInstance().then((prefs) {
+                                  var offset = prefs.getString(item['id']);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatPage(
+                                        parentChatData: item,
+                                        initialScrollOffset: offset != null
+                                            ? double.parse(offset)
+                                            : 0,
+                                      ),
+                                    ),
+                                  );
+                                });
+                              },
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(5.0),
+                                child: ClipOval(
+                                  child: buildBaseImage(
+                                      width: ScreenUtil().setWidth(40),
+                                      height: ScreenUtil().setHeight(40),
+                                      url: item['showAvatar']),
                                 ),
                               ),
+                              title: buildOneLineText(item['showUserName']),
+                              subtitle: item['lastMessage'] != null
+                                  ? buildOneLineText(
+                                      item['lastMessage'],
+                                    )
+                                  : null,
+                              trailing: Text(item['showUpdateTime'],
+                                  style: subtitleTextStyle),
                             );
-                          });
-                        },
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(5.0),
-                          child: ClipOval(
-                            child: buildBaseImage(
-                                width: ScreenUtil().setWidth(40),
-                                height: ScreenUtil().setHeight(40),
-                                url: item['showAvatar']),
-                          ),
+                          },
+                          itemCount: chatList.length,
+                          separatorBuilder: (BuildContext context, int index) {
+                            return Divider(
+                              color: Colors.grey,
+                              height: ScreenUtil().setHeight(1),
+                              indent: ScreenUtil().setWidth(65),
+                            );
+                          },
                         ),
-                        title: buildOneLineText(item['showUserName']),
-                        subtitle: item['lastMessage'] != null
-                            ? buildOneLineText(
-                                item['lastMessage'],
-                              )
-                            : null,
-                        trailing: Text(item['showUpdateTime'],
-                            style: subtitleTextStyle),
-                      );
-                    },
-                    itemCount: chatList.length,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return Divider(
-                        color: Colors.grey,
-                        height: ScreenUtil().setHeight(1),
-                        indent: ScreenUtil().setWidth(65),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
     );

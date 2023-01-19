@@ -3,17 +3,17 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 
-class ChatSettingPage extends StatefulWidget {
+class ChatGPTSettingPage extends StatefulWidget {
   final String? chatId;
   final String? messageListKey;
-  const ChatSettingPage({Key? key, this.chatId, this.messageListKey})
+  const ChatGPTSettingPage({Key? key, this.chatId, this.messageListKey})
       : super(key: key);
 
   @override
-  State<ChatSettingPage> createState() => _ChatSettingPageState();
+  State<ChatGPTSettingPage> createState() => _ChatGPTSettingPageState();
 }
 
-class _ChatSettingPageState extends State<ChatSettingPage> {
+class _ChatGPTSettingPageState extends State<ChatGPTSettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,15 +26,16 @@ class _ChatSettingPageState extends State<ChatSettingPage> {
                       fullyCapitalizedForMaterial: false,
                       context: context,
                       title: 'hint',
+                      cancelLabel: 'Cancel',
+                      okLabel: 'Confirm',
                       message: 'Are you sure to delete the chat history?')
                   .then((value) {
                 if (value == OkCancelResult.ok) {
                   db
-                      .collection(ChatsKey)
+                      .collection(chatGPTDbKey)
                       .doc(widget.chatId!)
-                      .update({widget.messageListKey!: []}).then((value) {
-                    Navigator.pop(context);
-                    showMessage(context: context, title: 'success');
+                      .update({'messages': []}).then((value) {
+                    Navigator.pop(context, {'removeAllChat': true});
                   });
                 }
               });
