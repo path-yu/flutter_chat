@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 
@@ -34,7 +35,7 @@ class _ChatSettingPageState extends State<ChatSettingPage> {
                       .doc(widget.chatId!)
                       .update({widget.messageListKey!: []}).then((value) {
                     Navigator.pop(context);
-                    showMessage(context: context, title: 'success');
+                    showToast('success');
                   });
                 }
               });
