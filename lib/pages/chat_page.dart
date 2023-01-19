@@ -158,8 +158,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   void loadMessageListVoiceData({List<Map>? list}) async {
     var voiceMessageList = list ?? getVoiceMessageList();
     for (var element in voiceMessageList) {
-      if (element['load']) return;
-      if (element['type'] != 'voice') return;
+      if (element?['load']) return;
+      if (element?['type'] != 'voice') return;
       final player = AudioPlayer(); // Create a player
       Future<Duration?> futureDuration;
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -516,14 +516,18 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                     controller: _scrollController,
                     itemBuilder: (BuildContext context, int index) {
                       var item = messageList[index];
+                      bool isDarkMode =
+                          context.watch<CurrentBrightness>().isDarkMode;
                       var isMyRequest = item['isMyRequest'];
                       StatelessWidget bubble;
                       Color bubbleBackgroundColor = isMyRequest
-                          ? context.read<CurrentPrimarySwatch>().color
-                          : context
+                          ? context
                               .read<CurrentPrimarySwatch>()
                               .color
-                              .withOpacity(0.5);
+                              .withOpacity(0.4)
+                          : isDarkMode
+                              ? Colors.black26
+                              : Colors.white;
                       if (item['type'] == 'pic') {
                         bubble = GestureDetector(
                           onTap: () {
@@ -569,7 +573,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                               constraints: BoxConstraints(
                                 maxWidth: item['type'] == 'voice'
                                     ? screenWidth * 0.45
-                                    : screenWidth * 0.7,
+                                    : screenWidth * 0.6,
                               ),
                               child: item['type'] == 'voice'
                                   ? buildScaleAnimatedSwitcher(item['load']
@@ -698,8 +702,12 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                         ))
                                   : SelectableText(
                                       item['content'].toString(),
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      style: TextStyle(
+                                          color: isMyRequest
+                                              ? Colors.white
+                                              : isDarkMode
+                                                  ? Colors.white
+                                                  : Colors.black),
                                     )),
                         );
                       }
@@ -732,7 +740,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                         child: Text(item['showCreateTime'],
                                             style: TextStyle(
                                                 fontSize:
-                                                    ScreenUtil().setSp(12))),
+                                                    ScreenUtil().setSp(10))),
                                       ),
                                     )
                                   ],
@@ -753,7 +761,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                         child: Text(item['showCreateTime'],
                                             style: TextStyle(
                                                 fontSize:
-                                                    ScreenUtil().setSp(12))),
+                                                    ScreenUtil().setSp(10))),
                                       ),
                                     )
                                   ],
