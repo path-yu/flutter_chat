@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DrawerHead extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
   const DrawerHead({super.key, required this.scaffoldKey});
+  Future<void> _launchUrl() async {
+    const url = 'https://github.com/path-yu/flutter_chat';
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +54,17 @@ class DrawerHead extends StatelessWidget {
             ),
             onTap: () {
               Navigator.pushNamed(context, '/setting');
+            },
+          ),
+          ListTile(
+            title: const Text('Source code'),
+            leading: SvgPicture.asset(
+              'assets/github_icon.svg',
+              width: 22,
+              height: 22,
+            ),
+            onTap: () {
+              _launchUrl();
             },
           ),
         ],
