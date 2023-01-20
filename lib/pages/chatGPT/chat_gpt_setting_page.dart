@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 class ChatGPTSettingPage extends StatefulWidget {
   final String? chatId;
@@ -21,6 +24,7 @@ class _ChatGPTSettingPageState extends State<ChatGPTSettingPage> {
       body: ListView(
         children: [
           ListTile(
+            onLongPress: () {},
             onTap: () {
               showOkCancelAlertDialog(
                       fullyCapitalizedForMaterial: false,
@@ -42,6 +46,36 @@ class _ChatGPTSettingPageState extends State<ChatGPTSettingPage> {
             },
             leading: const Icon(Icons.delete_outline_outlined),
             title: const Text('delete chat history'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Chat GPT mode'),
+            subtitle: Text(
+              context.watch<CurrentChatGPTSetting>().modelLabel,
+              style: TextStyle(fontSize: ScreenUtil().setSp(10)),
+            ),
+            onTap: () async {
+              var result = await showConfirmationDialog(
+                  barrierDismissible: false,
+                  fullyCapitalizedForMaterial: false,
+                  title: 'Select mode ',
+                  context: context,
+                  cancelLabel: 'Cancel',
+                  okLabel: 'Ok',
+                  initialSelectedActionKey:
+                      context.read<CurrentChatGPTSetting>().model,
+                  actions: [
+                    const AlertDialogAction(
+                      label: 'QA',
+                      key: 0,
+                    ),
+                    const AlertDialogAction(
+                      label: 'Image create',
+                      key: 1,
+                    ),
+                  ]);
+              context.read<CurrentChatGPTSetting>().changeMode(result!);
+            },
           )
         ],
       ),

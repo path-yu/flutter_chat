@@ -1,6 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,8 +14,11 @@ import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/pages/chatGPT/chat_gpt_setting_page.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/photo_view.dart';
+import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatGPTPage extends StatefulWidget {
@@ -53,6 +57,12 @@ class _ChatGPTPageState extends State<ChatGPTPage>
   // longPress
   bool hasLongPress = false;
   List<Map> selectedList = [];
+
+  List<String> get pics => messageList
+      .where((element) => element['contentType'] == 'image')
+      .toList()
+      .map((e) => e['content'] as String)
+      .toList();
   void _getMessageData() async {
     setState(() {
       isLoading = true;
@@ -106,23 +116,35 @@ class _ChatGPTPageState extends State<ChatGPTPage>
     }
   }
 
-  Future<Response<dynamic>> requestApi(String prompt) async {
+  Future<String> requestApi(String prompt) async {
     if (apiKey.isEmpty) {
       showToast('apiKey is Empty');
       return throw Exception('apiKey is Empty');
     }
-    var response = await Dio().post('https://api.openai.com/v1/completions',
-        data: {
-          'model': 'text-davinci-003',
-          'prompt': prompt,
-          "temperature": 0,
-          "max_tokens": 300,
-          "top_p": 1,
-          "frequency_penalty": 0.0,
-          "presence_penalty": 0.0,
-        },
+    String url = '';
+    var data = {};
+    int model = context.read<CurrentChatGPTSetting>().model;
+    if (model == 0) {
+      url = 'https://api.openai.com/v1/completions';
+      data = {
+        'model': 'text-davinci-003',
+        'prompt': prompt,
+        "temperature": 0,
+        "max_tokens": 300,
+        "top_p": 1,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+      };
+    } else if (model == 1) {
+      url = 'https://api.openai.com/v1/images/generations';
+      data = {"prompt": prompt, "n": 1, "size": "1024x1024"};
+    }
+    var response = await Dio().post(url,
+        data: data,
         options: Options(headers: {'Authorization': 'Bearer $apiKey'}));
-    return response;
+    return model == 0
+        ? response.data['choices'][0]['text']
+        : response.data['data'][0]['url'];
   }
 
   handSendClick() async {
@@ -134,12 +156,15 @@ class _ChatGPTPageState extends State<ChatGPTPage>
       {
         'type': 'question',
         'content': message,
+        'contentType': 'text',
         'createTime': DateTime.now().millisecondsSinceEpoch,
       },
       {
         'type': 'answer',
         'content': '',
         'status': 0, // 0 pending 1 success 2 error
+        'contentType':
+            context.read<CurrentChatGPTSetting>().model == 0 ? 'text' : 'image',
         'createTime': DateTime.now().millisecondsSinceEpoch,
       }
     ];
@@ -150,9 +175,8 @@ class _ChatGPTPageState extends State<ChatGPTPage>
       sendLoading = true;
     });
     try {
-      var response = await requestApi(prompt);
+      var answer = await requestApi(prompt);
       _editingController.text = '';
-      String answer = response.data['choices'][0]['text'];
       List<Map> writeData = data.map((e) => e as Map).toList();
       writeData[1].remove('status');
       writeData[1]['content'] = answer.trim();
@@ -167,6 +191,7 @@ class _ChatGPTPageState extends State<ChatGPTPage>
         hasScrollBottom = true;
       });
     } catch (e) {
+      print(e);
       setState(() {
         messageList.last['content'] = '';
         messageList.last['status'] = 2;
@@ -316,9 +341,8 @@ class _ChatGPTPageState extends State<ChatGPTPage>
       messageList[index]['status'] = 0;
     });
     try {
-      var response = await requestApi(targetMessage['content']);
+      var answer = await requestApi(targetMessage['content']);
       _editingController.text = '';
-      String answer = response.data['choices'][0]['text'];
       data[1]['content'] = answer.trim();
       data[1]['status'] = 1;
       db.collection(chatGPTDbKey).doc(chatId).update({
@@ -428,12 +452,48 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                       var item = messageList[index];
                                       var isQuestion =
                                           item['type'] == 'question';
-                                      var ele = Text(
-                                        item['content'],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: ScreenUtil().setSp(12)),
-                                      );
+                                      var ele = item['contentType'] == 'text'
+                                          ? Text(
+                                              item['content'],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize:
+                                                      ScreenUtil().setSp(12)),
+                                            )
+                                          : GestureDetector(
+                                              onTap: () {
+                                                var index = pics
+                                                    .indexOf(item['content']);
+                                                //打开B路由
+                                                Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                  builder: (
+                                                    BuildContext context,
+                                                  ) {
+                                                    return PhotoView(
+                                                      pics: pics,
+                                                      showIndex: index,
+                                                    );
+                                                  },
+                                                ));
+                                              },
+                                              child: Hero(
+                                                  tag: item['content'],
+                                                  child: SizedBox(
+                                                    width: ScreenUtil()
+                                                        .setWidth(250),
+                                                    height: ScreenUtil()
+                                                        .setWidth(250),
+                                                    child:
+                                                        ExtendedImage.network(
+                                                      item['content'],
+                                                      fit: BoxFit.contain,
+                                                      mode: ExtendedImageMode
+                                                          .gesture,
+                                                      cache: true,
+                                                    ),
+                                                  )),
+                                            );
                                       Widget resultEle = ListTile(
                                         selected: selectedList.contains(item),
                                         onTap: () => handleOnTap(item),
@@ -568,8 +628,13 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                   message = value;
                                 });
                               },
-                              decoration: const InputDecoration(
-                                hintText: 'Your question',
+                              decoration: InputDecoration(
+                                hintText: context
+                                            .read<CurrentChatGPTSetting>()
+                                            .model ==
+                                        0
+                                    ? 'Your question'
+                                    : 'Image description',
                                 border: InputBorder.none,
                                 filled: true, // dont forget this line
                               ),
