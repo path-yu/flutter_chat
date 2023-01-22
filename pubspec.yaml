@@ -49,6 +49,9 @@ dependencies:
   flutter_spinkit: ^5.1.0
   firebase_remote_config: ^3.0.4
   url_launcher: ^6.1.7
+  flutter_markdown: ^0.6.13
+  flutter_highlighter: ^0.1.1
+  google_fonts: ^3.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -363,6 +363,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.5"
+  flutter_highlighter:
+    dependency: "direct main"
+    description:
+      name: flutter_highlighter
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.1"
   flutter_hooks:
     dependency: "direct main"
     description:
@@ -377,6 +384,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.1"
+  flutter_markdown:
+    dependency: "direct main"
+    description:
+      name: flutter_markdown
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.6.13"
   flutter_native_splash:
     dependency: "direct main"
     description:
@@ -443,6 +457,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.3.2"
+  google_fonts:
+    dependency: "direct main"
+    description:
+      name: google_fonts
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.1"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -478,6 +499,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.10.2"
+  highlighter:
+    dependency: transitive
+    description:
+      name: highlighter
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.1"
   html:
     dependency: transitive
     description:
@@ -604,6 +632,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.7.5"
+  markdown:
+    dependency: transitive
+    description:
+      name: markdown
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "6.0.1"
   matcher:
     dependency: transitive
     description:

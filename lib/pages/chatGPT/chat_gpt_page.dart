@@ -10,12 +10,14 @@ import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/build_scale_animated_switcher.dart';
+import 'package:flutter_chat/components/code_element_build.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/pages/chatGPT/chat_gpt_setting_page.dart';
 import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -45,15 +47,7 @@ class _ChatGPTPageState extends State<ChatGPTPage>
   double scrollMove = 0;
   double startMoveOffset = 0;
   double offset = 0;
-  late final AnimationController _sizeTransitionController =
-      AnimationController(
-    duration: const Duration(milliseconds: 300),
-    vsync: this,
-  );
-  late final Animation<double> _sizeTransitionAnimation = CurvedAnimation(
-    parent: _sizeTransitionController,
-    curve: Curves.linear,
-  );
+
   // longPress
   bool hasLongPress = false;
   List<Map> selectedList = [];
@@ -376,6 +370,7 @@ class _ChatGPTPageState extends State<ChatGPTPage>
   @override
   Widget build(BuildContext context) {
     handleBuildScrollToBottom(context);
+    double screenHeight = MediaQuery.of(context).size.height;
     return HideKeyboard(
       child: SelectionArea(
         child: WillPopScope(
@@ -452,14 +447,36 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                       var item = messageList[index];
                                       var isQuestion =
                                           item['type'] == 'question';
+                                      var content = item['content'] as String;
+                                      bool isMd = content.contains('```');
                                       var ele = item['contentType'] == 'text'
-                                          ? Text(
-                                              item['content'],
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontSize:
-                                                      ScreenUtil().setSp(12)),
-                                            )
+                                          ? isMd
+                                              ? ConstrainedBox(
+                                                  constraints: BoxConstraints(
+                                                      minHeight:
+                                                          screenHeight * 0.4,
+                                                      maxHeight:
+                                                          screenHeight * 0.6),
+                                                  child: Scrollbar(
+                                                    child: Markdown(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(0),
+                                                        shrinkWrap: true,
+                                                        data: content,
+                                                        builders: {
+                                                          'code':
+                                                              CodeElementBuilder(),
+                                                        }),
+                                                  ))
+                                              : Text(
+                                                  item['content'],
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: ScreenUtil()
+                                                          .setSp(12)),
+                                                )
                                           : GestureDetector(
                                               onTap: () {
                                                 var index = pics
@@ -499,26 +516,29 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                         onTap: () => handleOnTap(item),
                                         onLongPress: () =>
                                             handleOnLongPress(item),
-                                        contentPadding: EdgeInsets.fromLTRB(
-                                            ScreenUtil().setWidth(10),
-                                            ScreenUtil().setWidth(10),
-                                            ScreenUtil().setWidth(15),
-                                            ScreenUtil().setWidth(10)),
-                                        trailing: AnimatedOpacity(
-                                          opacity: hasLongPress ? 1 : 0,
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          child: SizedBox(
-                                            width: ScreenUtil().setWidth(15),
-                                            height: ScreenUtil().setWidth(15),
-                                            child: Checkbox(
-                                                value:
-                                                    selectedList.contains(item),
-                                                onChanged: (value) {
-                                                  toggleCheckBox(item);
-                                                }),
-                                          ),
+                                        contentPadding: EdgeInsets.all(
+                                          ScreenUtil().setWidth(10),
                                         ),
+                                        trailing: hasLongPress
+                                            ? AnimatedOpacity(
+                                                opacity: hasLongPress ? 1 : 0,
+                                                duration: const Duration(
+                                                    milliseconds: 300),
+                                                child: SizedBox(
+                                                  width:
+                                                      ScreenUtil().setWidth(10),
+                                                  height:
+                                                      ScreenUtil().setWidth(10),
+                                                  child: Checkbox(
+                                                      value: selectedList
+                                                          .contains(item),
+                                                      onChanged: (value) {
+                                                        toggleCheckBox(item);
+                                                      }),
+                                                ),
+                                              )
+                                            : null,
+                                        horizontalTitleGap: 10,
                                         leading: isQuestion
                                             ? ClipOval(
                                                 child: buildBaseImage(
@@ -529,26 +549,29 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                                     url: getCurrentUser()
                                                         .photoURL!),
                                               )
-                                            : ClipOval(
-                                                child: Container(
-                                                  color: const Color.fromRGBO(
-                                                      16, 163, 127, 1),
-                                                  width:
-                                                      ScreenUtil().setWidth(40),
-                                                  height: ScreenUtil()
-                                                      .setHeight(40),
-                                                  child: Center(
-                                                    child: SvgPicture.asset(
-                                                      'assets/chat_gpt.svg',
+                                            : isMd
+                                                ? null
+                                                : ClipOval(
+                                                    child: Container(
+                                                      color:
+                                                          const Color.fromRGBO(
+                                                              16, 163, 127, 1),
                                                       width: ScreenUtil()
-                                                          .setWidth(20),
+                                                          .setWidth(40),
                                                       height: ScreenUtil()
-                                                          .setWidth(20),
-                                                      color: Colors.white,
+                                                          .setHeight(40),
+                                                      child: Center(
+                                                        child: SvgPicture.asset(
+                                                          'assets/chat_gpt.svg',
+                                                          width: ScreenUtil()
+                                                              .setWidth(20),
+                                                          height: ScreenUtil()
+                                                              .setWidth(20),
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ),
                                         title: isQuestion
                                             ? ele
                                             : item['status'] == 0
@@ -575,7 +598,6 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                           ),
                                         ),
                                       );
-
                                       return item['status'] == 2
                                           ? Column(
                                               children: [
