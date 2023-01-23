@@ -652,7 +652,7 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                               },
                               decoration: InputDecoration(
                                 hintText: context
-                                            .read<CurrentChatGPTSetting>()
+                                            .watch<CurrentChatGPTSetting>()
                                             .model ==
                                         0
                                     ? 'Your question'
