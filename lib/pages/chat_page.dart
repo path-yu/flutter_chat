@@ -94,7 +94,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         var target = data.value[index];
         var newMessageList = target['messageList'] as List<Map>;
 
-        if (newMessageList.length == messageList.length) {
+        if (newMessageList.length == messageList.length ||
+            newMessageList.isEmpty) {
           return;
         }
         setState(() {
