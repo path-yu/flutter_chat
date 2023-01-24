@@ -93,11 +93,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       if (index != -1) {
         var target = data.value[index];
         var newMessageList = target['messageList'] as List<Map>;
-
-        if (newMessageList.length == messageList.length ||
-            newMessageList.isEmpty) {
+        if (newMessageList.length == messageList.length) {
           return;
         }
+        print(newMessageList.length);
         setState(() {
           if (newMessageList.length > messageList.length) {
             var diffMessageList = newMessageList.sublist(
@@ -159,7 +158,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   void loadMessageListVoiceData({List<Map>? list}) async {
     var voiceMessageList = list ?? getVoiceMessageList();
     for (var element in voiceMessageList) {
-      if (element?['load']) return;
+      if (element?['load'] != null && element['load']) return;
       if (element?['type'] != 'voice') return;
       final player = AudioPlayer(); // Create a player
       Future<Duration?> futureDuration;
@@ -583,11 +582,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                               CrossAxisAlignment.end,
                                           children: [
                                             Container(
-                                              width: ScreenUtil().setWidth(25),
-                                              height: ScreenUtil().setWidth(25),
-                                              decoration: const BoxDecoration(
+                                              width: ScreenUtil().setWidth(30),
+                                              height: ScreenUtil().setWidth(30),
+                                              decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                color: Colors.white30,
+                                                color: context
+                                                    .read<
+                                                        CurrentPrimarySwatch>()
+                                                    .color,
                                               ),
                                               child: Center(
                                                 child: GestureDetector(
@@ -633,9 +635,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                       value: item[
                                                           'currentSliderValue'],
                                                       max: 100,
-                                                      inactiveColor:
-                                                          Colors.white24,
-                                                      activeColor: Colors.white,
                                                       label: item[
                                                               'currentSliderValue']
                                                           .round()
@@ -656,8 +655,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                             item[
                                                                 'currentPlayTimeStr'],
                                                             style: TextStyle(
-                                                                color: Colors
-                                                                    .white,
                                                                 fontSize:
                                                                     ScreenUtil()
                                                                         .setSp(
@@ -665,8 +662,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                         Text(
                                                           '${item['time']}s',
                                                           style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
                                                               fontSize:
                                                                   ScreenUtil()
                                                                       .setSp(

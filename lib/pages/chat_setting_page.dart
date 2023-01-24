@@ -3,6 +3,7 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class ChatSettingPage extends StatefulWidget {
   final String? chatId;
@@ -30,12 +31,15 @@ class _ChatSettingPageState extends State<ChatSettingPage> {
                       message: 'Are you sure to delete the chat history?')
                   .then((value) {
                 if (value == OkCancelResult.ok) {
+                  EasyLoading.show(
+                      status: 'deleting', maskType: EasyLoadingMaskType.black);
                   db
                       .collection(ChatsKey)
                       .doc(widget.chatId!)
                       .update({widget.messageListKey!: []}).then((value) {
                     Navigator.pop(context);
                     showToast('success');
+                    EasyLoading.dismiss();
                   });
                 }
               });

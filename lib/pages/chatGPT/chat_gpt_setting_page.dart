@@ -3,6 +3,7 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -35,11 +36,14 @@ class _ChatGPTSettingPageState extends State<ChatGPTSettingPage> {
                       message: 'Are you sure to delete the chat history?')
                   .then((value) {
                 if (value == OkCancelResult.ok) {
+                  EasyLoading.show(
+                      status: 'deleting', maskType: EasyLoadingMaskType.black);
                   db
                       .collection(chatGPTDbKey)
                       .doc(widget.chatId!)
                       .update({'messages': []}).then((value) {
                     Navigator.pop(context, {'removeAllChat': true});
+                    EasyLoading.dismiss();
                   });
                 }
               });
