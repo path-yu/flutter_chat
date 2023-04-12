@@ -616,6 +616,30 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.0.15"
+  image_cropper:
+    dependency: "direct main"
+    description:
+      name: image_cropper
+      sha256: e08311fcf0cdba367715a5036aec8d8e9b3ab84479909dc2156dd5bf872edefb
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.2"
+  image_cropper_for_web:
+    dependency: transitive
+    description:
+      name: image_cropper_for_web
+      sha256: "09e93a8ec0435adcaa23622ac090442872f18145d70b9ff605ffedcf97d56255"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.3"
+  image_cropper_platform_interface:
+    dependency: transitive
+    description:
+      name: image_cropper_platform_interface
+      sha256: "62349e3aab63873ea9b9ab9f69d036ab8a0d74b3004beec4303981386cb9273f"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.3"
   image_picker:
     dependency: "direct main"
     description:

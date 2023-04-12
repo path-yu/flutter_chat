@@ -133,12 +133,16 @@ class _ChatGPTPageState extends State<ChatGPTPage>
       url = 'https://api.openai.com/v1/images/generations';
       data = {"prompt": prompt, "n": 1, "size": "1024x1024"};
     }
-    var response = await Dio().post(url,
-        data: data,
-        options: Options(headers: {'Authorization': 'Bearer $apiKey'}));
-    return model == 0
-        ? response.data['choices'][0]['text']
-        : response.data['data'][0]['url'];
+    try {
+      var response = await Dio().post(url,
+          data: data,
+          options: Options(headers: {'Authorization': 'Bearer $apiKey'}));
+      return model == 0
+          ? response.data['choices'][0]['text']
+          : response.data['data'][0]['url'];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   handSendClick() async {
@@ -184,8 +188,12 @@ class _ChatGPTPageState extends State<ChatGPTPage>
         sendLoading = false;
         hasScrollBottom = true;
       });
-    } catch (e) {
-      print(e);
+    } on DioError catch (e) {
+      if (e.response!.data != null) {
+        showAlertDialog(
+            context: context, message: e.response!.data!['error']['message']);
+        // showGeneralDialog(context: context, pageBuilder: pageBuilder)
+      }
       setState(() {
         messageList.last['content'] = '';
         messageList.last['status'] = 2;

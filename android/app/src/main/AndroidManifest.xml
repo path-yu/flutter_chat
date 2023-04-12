@@ -31,6 +31,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
     <!-- 如果不需要获取图片，移除 READ_MEDIA_IMAGES -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />

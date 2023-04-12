@@ -52,6 +52,7 @@ dependencies:
   flutter_markdown: ^0.6.13
   flutter_highlighter: ^0.1.1
   google_fonts: ^3.0.1
+  image_cropper: ^3.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
