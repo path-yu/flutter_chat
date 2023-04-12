@@ -1,3 +1,4 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/showToast.dart';
@@ -17,11 +18,15 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
     if (email.isEmpty) {
       return showToast('Email is not empty!');
     }
-    await FirebaseAuth.instance
-        .sendPasswordResetEmail(email: email)
-        .then((value) {
-      showToast('Mail sent successfully');
-    });
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email)
+          .then((value) {
+        showToast('Mail sent successfully');
+      });
+    } on FirebaseAuthException catch (e) {
+      showOkAlertDialog(context: context, message: e.message!);
+    }
   }
 
   String email = '';
@@ -50,7 +55,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
               onChanged: (value) {
                 email = value!;
               },
-              hintText: 'your email',
+              hintText: 'Your email',
             ),
           ),
           SizedBox(

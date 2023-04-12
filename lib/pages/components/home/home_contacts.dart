@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+// import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/showToast.dart';
@@ -193,7 +193,7 @@ class _HomeContactsState extends State<HomeContacts> {
             leading:
                 widget.hasNewFriends != null && widget.hasNewFriends == true
                     ? Badge(
-                        position: BadgePosition.topEnd(top: -2),
+                        alignment: AlignmentDirectional.topEnd,
                         child: Icon(
                           Icons.person_add,
                           size: ScreenUtil().setSp(25),

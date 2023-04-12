@@ -162,6 +162,7 @@ class _LoginPageState extends State<LoginPage>
                   children: [
                     TextFormField(
                       controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value!.isEmpty || !value.contains('@')) {
                           return 'Please enter a valid email address';
@@ -179,6 +180,7 @@ class _LoginPageState extends State<LoginPage>
                     ),
                     TextFormField(
                       controller: _passwordController,
+                      keyboardType: TextInputType.visiblePassword,
                       obscureText: true,
                       validator: (value) {
                         if (value!.isEmpty || value.length < 6) {
@@ -272,6 +274,10 @@ class _LoginPageState extends State<LoginPage>
                         style: TextStyle(fontSize: ScreenUtil().setSp(12))),
                   ),
                   TextButton(
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(50, 20),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
@@ -281,14 +287,21 @@ class _LoginPageState extends State<LoginPage>
                       ))
                 ],
               ),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/forget');
-                  },
-                  child: Text(
-                    'Forget password',
-                    style: TextStyle(fontSize: ScreenUtil().setSp(12)),
-                  )),
+              Transform.translate(
+                offset: const Offset(0, -6),
+                child: TextButton(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(50, 20),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/forget');
+                    },
+                    child: Text(
+                      'Forget password',
+                      style: TextStyle(fontSize: ScreenUtil().setSp(12)),
+                    )),
+              ),
             ],
           ),
         ));

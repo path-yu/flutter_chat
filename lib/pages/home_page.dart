@@ -3,7 +3,6 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +18,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int newFriendsBadgeCount = 0;
   int newMessageCount = 0;
 
-  var _sub;
   void handleOnTap(int? index) {
     setState(() {
       currentIndex = index!;
@@ -83,11 +81,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           icon: Icon(Icons.message), label: 'Messages'),
       BottomNavigationBarItem(
           icon: newFriendsBadgeCount != 0
-              ? Badge(
-                  badgeContent: Text(
-                    '$newFriendsBadgeCount',
-                    style: const TextStyle(color: Colors.white),
-                  ),
+              ? Badge.count(
+                  count: newFriendsBadgeCount,
                   child: const Icon(Icons.people),
                 )
               : const Icon(Icons.people),

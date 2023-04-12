@@ -14,10 +14,10 @@ import firebase_remote_config
 import firebase_storage
 import just_audio
 import macos_ui
-import path_provider_macos
+import path_provider_foundation
 import photo_manager
 import record_macos
-import shared_preferences_macos
+import shared_preferences_foundation
 import sqflite
 import url_launcher_macos
 

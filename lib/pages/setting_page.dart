@@ -99,7 +99,7 @@ class _SettingPageState extends State<SettingPage> {
                           showMaterialName: true,
                           heading: Text(
                             'Select color',
-                            style: Theme.of(context).textTheme.headline6,
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                           subheading: Text(
                             'Select color shade',
@@ -127,11 +127,17 @@ class _SettingPageState extends State<SettingPage> {
               SettingsTile(
                 title: const Text('Sign out'),
                 leading: const Icon(Icons.logout),
-                onPressed: (_) {
-                  FirebaseAuth.instance.signOut().then((value) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/login', (route) => false);
-                  });
+                onPressed: (_) async {
+                  var result = await showOkCancelAlertDialog(
+                      fullyCapitalizedForMaterial: false,
+                      context: context,
+                      title: 'Are you sure to exit?');
+                  if (result == OkCancelResult.ok) {
+                    FirebaseAuth.instance.signOut().then((value) {
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, '/login', (route) => false);
+                    });
+                  }
                 },
               ),
               SettingsTile(

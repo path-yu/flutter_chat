@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/showToast.dart';
@@ -20,14 +21,11 @@ import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_chat_bubble/bubble_type.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
-import 'package:flutter_chat_bubble/clippers/chat_bubble_clipper_4.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:record/record.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -114,6 +112,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
     _scrollController.addListener(() {
       var moveDiff = _scrollController.offset - offset;
+      print(_scrollController.offset);
       if (moveDiff > 0 && offset != 0) {
         moveDirection = MoveDirection.down;
       }
@@ -164,7 +163,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       Future<Duration?> futureDuration;
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       var filePath = prefs.getString(element['content']);
-      if (filePath != null) {
+      var file = File(filePath!);
+      if (file.existsSync()) {
         futureDuration =
             player.setAudioSource(AudioSource.uri(Uri.file(filePath)));
       } else {
@@ -200,6 +200,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
             element['currentPlayTimeStr'] = currentPlayTimeStr;
             element['currentPlayDuration'] = event;
           });
+        });
+      }, onError: (err) {
+        setState(() {
+          element['load'] = true;
+          element['error'] = 'resource does not exist';
         });
       });
     }
@@ -577,124 +582,139 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                               ),
                               child: item['type'] == 'voice'
                                   ? buildScaleAnimatedSwitcher(item['load']
-                                      ? Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Container(
-                                              width: ScreenUtil().setWidth(30),
-                                              height: ScreenUtil().setWidth(30),
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: context
-                                                    .read<
-                                                        CurrentPrimarySwatch>()
-                                                    .color,
-                                              ),
-                                              child: Center(
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      handleVoicePlayClick(
-                                                          item),
-                                                  child: AnimatedIcon(
-                                                    icon: AnimatedIcons
-                                                        .play_pause,
-                                                    progress: item['animation'],
-                                                    size: 20.0,
-                                                    color: Colors.white,
-                                                    semanticLabel: 'Show menu',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            buildSpace(
-                                                ScreenUtil().setWidth(10)),
-                                            Expanded(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  SliderTheme(
-                                                    data:
-                                                        SliderTheme.of(context)
-                                                            .copyWith(
-                                                      trackShape:
-                                                          const RectangularSliderTrackShape(),
-                                                      thumbShape:
-                                                          const RoundSliderThumbShape(
-                                                              enabledThumbRadius:
-                                                                  5.0),
-                                                      overlayShape:
-                                                          const RoundSliderOverlayShape(
-                                                              overlayRadius:
-                                                                  5.0),
-                                                    ),
-                                                    child: Slider(
-                                                      value: item[
-                                                          'currentSliderValue'],
-                                                      max: 100,
-                                                      label: item[
-                                                              'currentSliderValue']
-                                                          .round()
-                                                          .toString(),
-                                                      onChanged: (value) =>
-                                                          handleSliderChange(
-                                                              value, index),
-                                                    ),
-                                                  ),
-                                                  Opacity(
-                                                    opacity: 0.6,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                            item[
-                                                                'currentPlayTimeStr'],
-                                                            style: TextStyle(
-                                                                fontSize:
-                                                                    ScreenUtil()
-                                                                        .setSp(
-                                                                            12))),
-                                                        Text(
-                                                          '${item['time']}s',
-                                                          style: TextStyle(
-                                                              fontSize:
-                                                                  ScreenUtil()
-                                                                      .setSp(
-                                                                          12)),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
+                                      ? item['error'] != null
+                                          ? Center(
+                                              child: Text(
+                                                item['error'].toString(),
+                                                style: const TextStyle(
+                                                    color: Colors.red),
                                               ),
                                             )
-                                          ],
-                                        )
-                                      : Center(
-                                          child: Opacity(
-                                            opacity: 0.6,
-                                            child: AnimatedTextKit(
-                                              totalRepeatCount: 30,
-                                              pause: const Duration(
-                                                  milliseconds: 300),
-                                              animatedTexts: [
-                                                ColorizeAnimatedText(
-                                                  'loading voice...',
-                                                  colors: [
-                                                    Colors.white,
-                                                    Colors.black
-                                                  ],
-                                                  textStyle: const TextStyle(
-                                                      fontSize: 16),
+                                          : Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                Container(
+                                                  width:
+                                                      ScreenUtil().setWidth(28),
+                                                  height:
+                                                      ScreenUtil().setWidth(28),
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: context
+                                                        .read<
+                                                            CurrentPrimarySwatch>()
+                                                        .color,
+                                                  ),
+                                                  child: Center(
+                                                    child: GestureDetector(
+                                                      onTap: () =>
+                                                          handleVoicePlayClick(
+                                                              item),
+                                                      child: AnimatedIcon(
+                                                        icon: AnimatedIcons
+                                                            .play_pause,
+                                                        progress:
+                                                            item['animation'],
+                                                        size: 20.0,
+                                                        color: Colors.white,
+                                                        semanticLabel:
+                                                            'Show menu',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                buildSpace(
+                                                    ScreenUtil().setWidth(5)),
+                                                Expanded(
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      SliderTheme(
+                                                        data: SliderTheme.of(
+                                                                context)
+                                                            .copyWith(
+                                                          trackShape:
+                                                              const RectangularSliderTrackShape(),
+                                                          thumbShape:
+                                                              const RoundSliderThumbShape(
+                                                                  enabledThumbRadius:
+                                                                      5.0),
+                                                          overlayShape:
+                                                              const RoundSliderOverlayShape(
+                                                                  overlayRadius:
+                                                                      5.0),
+                                                        ),
+                                                        child: Slider(
+                                                          value: item[
+                                                              'currentSliderValue'],
+                                                          max: 100,
+                                                          label: item[
+                                                                  'currentSliderValue']
+                                                              .round()
+                                                              .toString(),
+                                                          onChanged: (value) =>
+                                                              handleSliderChange(
+                                                                  value, index),
+                                                        ),
+                                                      ),
+                                                      Opacity(
+                                                        opacity: 0.6,
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Transform.translate(
+                                                              offset: Offset(
+                                                                  ScreenUtil()
+                                                                      .setWidth(
+                                                                          5),
+                                                                  0),
+                                                              child: Text(
+                                                                  item[
+                                                                      'currentPlayTimeStr'],
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          ScreenUtil()
+                                                                              .setSp(10))),
+                                                            ),
+                                                            Text(
+                                                              '${item['time']}s',
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      ScreenUtil()
+                                                                          .setSp(
+                                                                              10)),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 )
                                               ],
+                                            )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const CupertinoActivityIndicator(),
+                                            SizedBox(
+                                              width: ScreenUtil().setWidth(5),
                                             ),
-                                          ),
+                                            Text(
+                                              'Loading',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      ScreenUtil().setSp(12),
+                                                  color: CupertinoColors
+                                                      .inactiveGray),
+                                            )
+                                          ],
                                         ))
                                   : SelectableText(
                                       item['content'].toString(),
@@ -772,7 +792,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                     itemCount: messageList.length,
                   )),
                   const Divider(
-                    height: 1,
+                    height: 0.5,
+                    thickness: 0.5,
                   ),
                   FadeIndexedStack(
                     index: indexedStackIndex,
