@@ -4,6 +4,7 @@ import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatSettingPage extends StatefulWidget {
   final String? chatId;
@@ -37,7 +38,10 @@ class _ChatSettingPageState extends State<ChatSettingPage> {
                       .collection(ChatsKey)
                       .doc(widget.chatId!)
                       .update({widget.messageListKey!: []}).then((value) {
-                    Navigator.pop(context);
+                    SharedPreferences.getInstance().then((prefs) {
+                      prefs.remove(widget.chatId!);
+                      Navigator.pop(context);
+                    });
                     showToast('success');
                     EasyLoading.dismiss();
                   });
