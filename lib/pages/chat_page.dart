@@ -94,7 +94,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         if (newMessageList.length == messageList.length) {
           return;
         }
-        print(newMessageList.length);
         setState(() {
           if (newMessageList.length > messageList.length) {
             var diffMessageList = newMessageList.sublist(
@@ -112,7 +111,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
     _scrollController.addListener(() {
       var moveDiff = _scrollController.offset - offset;
-      print(_scrollController.offset);
       if (moveDiff > 0 && offset != 0) {
         moveDirection = MoveDirection.down;
       }

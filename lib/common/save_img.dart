@@ -10,8 +10,7 @@ saveImg(String url) async {
   Directory? externalStorageDirectory = await getExternalStorageDirectory();
   File file =
       File(path.join(externalStorageDirectory!.path, path.basename(url)));
-  print('succ33ess');
-  file.writeAsBytes(response.data).then((value) {
-    print('success');
-  }); // This is a sync operation on a rea
+  file
+      .writeAsBytes(response.data)
+      .then((value) {}); // This is a sync operation on a rea
 }
