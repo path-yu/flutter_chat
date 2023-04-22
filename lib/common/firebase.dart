@@ -280,17 +280,12 @@ Future<Map<String, dynamic>> handleChatData(
         : lastMessage['type'] == 'voice'
             ? '[voice]'
             : lastMessage['content'];
-    data['showAvatar'] = lastMessage['avatar'];
-    data['showUserName'] = lastMessage['userName'];
-  } else {
-    data['showAvatar'] =
-        data['isMyRequest'] ? data['targetUserPhotoURL'] : data['userPhotoURL'];
-    data['showUserName'] =
-        data['isMyRequest'] ? data['targetUserName'] : data['userName'];
   }
+  data['showAvatar'] =
+      data['isMyRequest'] ? data['userPhotoURL'] : data['targetUserPhotoURL'];
+  data['showUserName'] =
+      data['isMyRequest'] ? data['userName'] : data['targetUserName'];
   data['appbarTitle'] = data['targetUserName'];
-  data.remove('messages');
-  data.remove('targetMessages');
   return data;
 }
 
