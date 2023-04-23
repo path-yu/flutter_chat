@@ -7,7 +7,7 @@ import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/eventBus/index.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/chat/chat_page.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -59,13 +59,20 @@ class _HomeMessagesState extends State<HomeMessages> {
               .listen((event) async {
             var data = await handleChatData(event);
             var index = chatList.indexWhere((ele) => ele['id'] == data['id']);
-            setState(() {
+
+            void setAction() {
               if (index == -1) {
                 chatList.add(data);
               } else {
                 chatList[index] = data;
               }
-            });
+            }
+
+            if (mounted) {
+              setState(setAction);
+            } else {
+              setAction();
+            }
             eventBus.fire(ChatsChangeEvent(chatList));
           });
         }

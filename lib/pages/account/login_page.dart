@@ -9,7 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../components/common.dart';
+import '../../components/common.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

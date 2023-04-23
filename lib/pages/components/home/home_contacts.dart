@@ -6,7 +6,7 @@ import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';
 import 'package:flutter_chat/eventBus/index.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/chat/chat_page.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,7 +15,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeContacts extends StatefulWidget {
   final bool? hasNewFriends;
-  const HomeContacts({super.key, this.hasNewFriends});
+  final Map messageNotificationMaps;
+  const HomeContacts(
+      {super.key, this.hasNewFriends, required this.messageNotificationMaps});
 
   @override
   State<HomeContacts> createState() => _HomeContactsState();
@@ -96,12 +98,16 @@ class _HomeContactsState extends State<HomeContacts> {
   void toChatPage(String chatId) {
     SharedPreferences.getInstance().then((prefs) {
       var offset = prefs.getString(chatId);
+      var messageNotificationItem = widget.messageNotificationMaps[chatId];
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ChatPage(
             parentChatData: getChatDataById(chats, chatId),
             initialScrollOffset: offset != null ? double.parse(offset) : 0,
+            notificationId: messageNotificationItem != null
+                ? messageNotificationItem['id']
+                : null,
           ),
         ),
       );
@@ -138,6 +144,7 @@ class _HomeContactsState extends State<HomeContacts> {
     if (contactList[index]['chatId'].isEmpty) {
       addNewChat(contactList[index]['uid']).then((value) {
         EasyLoading.dismiss();
+        var messageNotificationItem = widget.messageNotificationMaps[value];
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -149,6 +156,9 @@ class _HomeContactsState extends State<HomeContacts> {
                 'appbarTitle': contactList[index]['userName']
               },
               initialScrollOffset: 0,
+              notificationId: messageNotificationItem != null
+                  ? messageNotificationItem['id']
+                  : null,
             ),
           ),
         );

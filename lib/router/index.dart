@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/pages/account/forget_password_page.dart';
-import 'package:flutter_chat/pages/add_contact_page.dart';
-import 'package:flutter_chat/pages/change_password_page.dart';
+import 'package:flutter_chat/pages/contact/add_contact_page.dart';
+import 'package:flutter_chat/pages/account/change_password_page.dart';
 import 'package:flutter_chat/pages/chatGPT/chat_gpt_page.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
-import 'package:flutter_chat/pages/chat_setting_page.dart';
-import 'package:flutter_chat/pages/edit_user_page.dart';
+import 'package:flutter_chat/pages/chat/chat_page.dart';
+import 'package:flutter_chat/pages/chat/chat_setting_page.dart';
+import 'package:flutter_chat/pages/account/edit_user_page.dart';
 import 'package:flutter_chat/pages/home_page.dart';
-import 'package:flutter_chat/pages/login_page.dart';
-import 'package:flutter_chat/pages/new_friends_page.dart';
-import 'package:flutter_chat/pages/register_page.dart';
+import 'package:flutter_chat/pages/account/login_page.dart';
+import 'package:flutter_chat/pages/contact/new_friends_page.dart';
+import 'package:flutter_chat/pages/account/register_page.dart';
 import 'package:flutter_chat/pages/search_page.dart';
 import 'package:flutter_chat/pages/setting_page.dart';
 

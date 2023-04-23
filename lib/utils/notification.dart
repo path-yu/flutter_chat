@@ -2,7 +2,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/main.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/chat/chat_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,6 +71,7 @@ void addNotification(
               title: 'ChatApp',
               body: body,
               payload: payload,
+              wakeUpScreen: true,
               category: NotificationCategory.Message,
               actionType: ActionType.Default));
     }

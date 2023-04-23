@@ -4,6 +4,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
+import 'package:flutter_chat/provider/current_chat_setting.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class _SettingPageState extends State<SettingPage> {
     return Scaffold(
       appBar: buildAppBar('Settings', context),
       body: SettingsList(
+        platform: DevicePlatform.iOS,
         sections: [
           SettingsSection(
             title: const Text('Theme'),
@@ -144,12 +146,44 @@ class _SettingPageState extends State<SettingPage> {
                 title: const Text('Change password'),
                 leading: const Icon(Icons.lock),
                 onPressed: (_) {
-                  Navigator.popAndPushNamed(context, '/changePassword',
+                  Navigator.pushNamed(context, '/changePassword',
                       arguments: true);
                 },
               )
             ],
           ),
+          SettingsSection(title: const Text('Notifications'), tiles: [
+            SettingsTile.switchTile(
+              onToggle: (value) {
+                context
+                    .read<CurrentChatSetting>()
+                    .changeOpenNotification(value);
+              },
+              initialValue:
+                  context.watch<CurrentChatSetting>().openNotification,
+              leading: Icon(
+                context.watch<CurrentChatSetting>().openNotification
+                    ? Icons.notification_add
+                    : Icons.notifications_off,
+              ),
+              title: const Text('Turn on message notifications'),
+            ),
+            SettingsTile.switchTile(
+              onToggle: (value) {
+                context
+                    .read<CurrentChatSetting>()
+                    .changeOpenNotificationSound(value);
+              },
+              initialValue:
+                  context.watch<CurrentChatSetting>().openNotificationSound,
+              leading: Icon(
+                context.watch<CurrentChatSetting>().openNotificationSound
+                    ? Icons.music_note_outlined
+                    : Icons.music_off_outlined,
+              ),
+              title: const Text('Turn on notification sound'),
+            ),
+          ])
         ],
       ),
     );

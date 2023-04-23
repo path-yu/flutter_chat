@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
+import 'package:flutter_chat/provider/current_chat_setting.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
@@ -45,13 +46,17 @@ void main() async {
       : Colors.blue);
   var currentChatGPTSetting =
       CurrentChatGPTSetting(prefs.getInt(chatGPTModelKey) ?? 0);
+  var currentChatSetting = CurrentChatSetting(
+      prefs.getBool(openNotificationKey) ?? true,
+      prefs.getBool(openNotificationSoundKey) ?? true);
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => currentUser),
       ChangeNotifierProvider(create: (_) => currentBrightness),
       ChangeNotifierProvider(create: (_) => currentSwitch),
       ChangeNotifierProvider(create: (_) => currentPrimarySwatch),
-      ChangeNotifierProvider(create: (_) => currentChatGPTSetting)
+      ChangeNotifierProvider(create: (_) => currentChatGPTSetting),
+      ChangeNotifierProvider(create: (_) => currentChatSetting)
     ],
     child: const MyApp(),
   ));

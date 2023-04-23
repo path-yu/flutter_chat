@@ -31,14 +31,21 @@ samples, guidance on mobile development, and a full API reference.
 
 ![newFriends.png](https://github.com/path-yu/flutter_chat/blob/main/img/newFriends.png)
 
+## run for web
+
+```shell
+flutter run -d chrome --web-renderer html
+```
+
 ## build apk
 
 ```shell
 flutter build apk --obfuscate --split-debug-info=splitMap --target-platform android-arm,android-arm64,android-x64 --split-per-abi
 ```
 
-```
+## test DeepLink
 
+```shell
 ./adb shell am start -a android.intent.action.VIEW \
     -c android.intent.category.BROWSABLE \
     -d "http://flutterbooksample.com/book/1" \

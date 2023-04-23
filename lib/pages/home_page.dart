@@ -3,8 +3,10 @@ import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
+import 'package:flutter_chat/provider/current_chat_setting.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/utils/notification.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,7 +21,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int newFriendsBadgeCount = 0;
   // int newMessageCount = 0;
   Map messageNotificationMaps = {};
-
+  final AudioPlayer _audioPlayer = AudioPlayer();
   int get newMessageCount {
     return messageNotificationMaps.values.fold(0, (previousValue, element) {
       int count = element['count'];
@@ -48,7 +50,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     listenAddContactNotification();
     listenMessageNotification();
     setNotificationListener();
-    print('init');
   }
 
   void listenAddContactNotification() {
@@ -68,6 +69,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               .toList()
               .length;
         });
+      } else {
+        setState(() {
+          newFriendsBadgeCount = 0;
+        });
       }
     });
   }
@@ -79,19 +84,33 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         .where('type', isEqualTo: 'newMessage')
         .snapshots()
         .listen((querySnapshot) {
-      setState(() {
+      void setAction() {
         for (var e in querySnapshot.docs) {
           var data = e.data();
           data['id'] = e.id;
           messageNotificationMaps[e['chatId']] = data;
-          if (data['count'] != 0) {
+          if (data['count'] != 0 &&
+              context.read<CurrentChatSetting>().openNotification) {
             addNotification(
                 '${data['userName']}:${data['count']} new messages',
                 {'chatId': data['chatId'], 'notificationId': e.id},
                 e['localNotificationId']);
+            if (context.read<CurrentChatSetting>().openNotificationSound) {
+              _audioPlayer
+                  .setAsset('assets/new_message_sound.wav')
+                  .then((value) {
+                _audioPlayer.play();
+              });
+            }
           }
         }
-      });
+      }
+
+      if (mounted) {
+        setState(setAction);
+      } else {
+        setAction();
+      }
     });
   }
   // Future<void> initUniLinks() async {
@@ -146,6 +165,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           ),
           HomeContacts(
             hasNewFriends: newFriendsBadgeCount != 0,
+            messageNotificationMaps: messageNotificationMaps,
           ),
         ],
       ),

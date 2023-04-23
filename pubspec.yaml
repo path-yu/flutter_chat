@@ -68,6 +68,7 @@ flutter:
     - assets/google_icon.svg
     - assets/github_icon.svg
     - assets/chat_gpt.svg
+    - assets/new_message_sound.wav
   # 配置启动页
 flutter_native_splash:
   color: "#e1f5fe"

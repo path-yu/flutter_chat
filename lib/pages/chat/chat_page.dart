@@ -14,7 +14,7 @@ import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/fade_indexed_stack.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
-import 'package:flutter_chat/pages/chat_setting_page.dart';
+import 'package:flutter_chat/pages/chat/chat_setting_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';

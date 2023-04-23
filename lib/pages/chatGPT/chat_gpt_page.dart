@@ -14,7 +14,7 @@ import 'package:flutter_chat/components/code_element_build.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/pages/chatGPT/chat_gpt_setting_page.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/chat/chat_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
