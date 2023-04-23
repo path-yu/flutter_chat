@@ -4,6 +4,7 @@ import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:flutter_chat/utils/notification.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,7 +17,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int currentIndex = 0;
   int newFriendsBadgeCount = 0;
-  int newMessageCount = 0;
+  // int newMessageCount = 0;
+  Map messageNotificationMaps = {};
+
+  int get newMessageCount {
+    return messageNotificationMaps.values.fold(0, (previousValue, element) {
+      int count = element['count'];
+      return previousValue + count;
+    });
+  }
 
   void handleOnTap(int? index) {
     setState(() {
@@ -36,7 +45,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       context.read<CurrentUser>().setCurrentUser(data);
       eventBus.fire(UserChangeEvent(data));
     });
-    // listener add contact notification
+    listenAddContactNotification();
+    listenMessageNotification();
+    setNotificationListener();
+    print('init');
+  }
+
+  void listenAddContactNotification() {
     db
         .collection(NOTIFICATION)
         .where('targetEmail', isEqualTo: getCurrentUser().email)
@@ -55,9 +70,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         });
       }
     });
-    // initUniLinks();
   }
 
+  void listenMessageNotification() {
+    db
+        .collection(NOTIFICATION)
+        .where('targetUid', isEqualTo: getCurrentUser().uid)
+        .where('type', isEqualTo: 'newMessage')
+        .snapshots()
+        .listen((querySnapshot) {
+      setState(() {
+        for (var e in querySnapshot.docs) {
+          var data = e.data();
+          data['id'] = e.id;
+          messageNotificationMaps[e['chatId']] = data;
+          addNotification(
+              '${data['userName']}:${data['count']} new messages',
+              {'chatId': data['chatId'], 'notificationId': e.id},
+              e['localNotificationId']);
+        }
+      });
+    });
+  }
   // Future<void> initUniLinks() async {
   //   print('init');
   //   // ... check initialLink
@@ -77,8 +111,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final List<BottomNavigationBarItem> bottomTabsList = [
-      const BottomNavigationBarItem(
-          icon: Icon(Icons.message), label: 'Messages'),
+      BottomNavigationBarItem(
+          label: 'Messages',
+          icon: newMessageCount != 0
+              ? Badge.count(
+                  count: newMessageCount,
+                  child: const Icon(Icons.message),
+                )
+              : const Icon(Icons.message)),
       BottomNavigationBarItem(
           icon: newFriendsBadgeCount != 0
               ? Badge.count(
@@ -99,7 +139,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          const HomeMessages(),
+          HomeMessages(
+            messageNotificationMaps: messageNotificationMaps,
+          ),
           HomeContacts(
             hasNewFriends: newFriendsBadgeCount != 0,
           ),

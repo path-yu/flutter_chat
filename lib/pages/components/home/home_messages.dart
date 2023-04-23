@@ -17,8 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMessages extends StatefulWidget {
-  const HomeMessages({super.key});
-
+  final Map messageNotificationMaps;
+  const HomeMessages({super.key, required this.messageNotificationMaps});
   @override
   State<HomeMessages> createState() => _HomeMessagesState();
 }
@@ -31,12 +31,6 @@ class _HomeMessagesState extends State<HomeMessages> {
 
   Map<String, StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>?
       unSubscribeMap = {};
-  @override
-  void setState(fn) {
-    if (mounted) {
-      super.setState(fn);
-    }
-  }
 
   @override
   void initState() {
@@ -104,6 +98,12 @@ class _HomeMessagesState extends State<HomeMessages> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -156,6 +156,17 @@ class _HomeMessagesState extends State<HomeMessages> {
                         child: ListView.separated(
                           itemBuilder: (context, index) {
                             var item = chatList[index];
+                            var messageNotificationItem =
+                                widget.messageNotificationMaps[item['id']];
+                            var avatarEle = ClipRRect(
+                              borderRadius: BorderRadius.circular(5.0),
+                              child: ClipOval(
+                                child: buildBaseImage(
+                                    width: ScreenUtil().setWidth(40),
+                                    height: ScreenUtil().setHeight(40),
+                                    url: item['showAvatar']),
+                              ),
+                            );
                             return ListTile(
                               onTap: () {
                                 // Obtain shared preferences.
@@ -166,6 +177,10 @@ class _HomeMessagesState extends State<HomeMessages> {
                                     MaterialPageRoute(
                                       builder: (context) => ChatPage(
                                         parentChatData: item,
+                                        notificationId:
+                                            messageNotificationItem != null
+                                                ? messageNotificationItem['id']
+                                                : null,
                                         initialScrollOffset: offset != null
                                             ? double.parse(offset)
                                             : 0,
@@ -174,15 +189,13 @@ class _HomeMessagesState extends State<HomeMessages> {
                                   );
                                 });
                               },
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(5.0),
-                                child: ClipOval(
-                                  child: buildBaseImage(
-                                      width: ScreenUtil().setWidth(40),
-                                      height: ScreenUtil().setHeight(40),
-                                      url: item['showAvatar']),
-                                ),
-                              ),
+                              leading: messageNotificationItem != null &&
+                                      messageNotificationItem['count'] != 0
+                                  ? Badge.count(
+                                      count: messageNotificationItem['count'],
+                                      child: avatarEle,
+                                    )
+                                  : avatarEle,
                               title: buildOneLineText(item['showUserName']),
                               subtitle: item['lastMessage'] != null
                                   ? buildOneLineText(

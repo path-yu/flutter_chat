@@ -30,8 +30,12 @@ import 'package:record/record.dart';
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
   final double? initialScrollOffset;
-
-  const ChatPage({super.key, this.parentChatData, this.initialScrollOffset});
+  final String? notificationId;
+  const ChatPage(
+      {super.key,
+      this.parentChatData,
+      this.initialScrollOffset,
+      this.notificationId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -62,6 +66,9 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   bool isRecordEnd = false;
   Record? record;
   int startSeconds = 0;
+  int sendNewMessageCount = 0;
+  //
+  int? prevSendMessageTime;
   final Duration _duration = const Duration(milliseconds: 150);
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
@@ -85,6 +92,9 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       chatId = widget.parentChatData!['chatId'];
       replyUid = widget.parentChatData!['replyUid'];
       isMyRequest = widget.parentChatData!['isMyRequest'];
+      if (widget.notificationId != null) {
+        updateMessageNotification(widget.notificationId!, 0);
+      }
     });
     eventBus.on<ChatsChangeEvent>().listen((data) {
       var index = data.value.indexWhere((element) => element['id'] == chatId);
@@ -105,6 +115,9 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
             });
           } else {
             messageList = handleVoiceMessageList(newMessageList);
+          }
+          if (widget.notificationId != null) {
+            updateMessageNotification(widget.notificationId!, 0);
           }
         });
       }
@@ -289,14 +302,20 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     return {'baseMessageData': baseMessageData, 'messageItem': messageItem};
   }
 
-  handSendClick() {
+  handleSendClick() {
     var data = createMessageData(content: _controller.text);
     setState(() {
       messageList.add(data['messageItem']);
       _controller.text = '';
     });
-    addMessage(chatId, data['baseMessageData']!);
+    sendMessage(chatId, data['baseMessageData']!);
     scrollToBottom();
+  }
+
+  void sendMessage(String chatId, Map<dynamic, dynamic> message) {
+    addMessage(chatId, message);
+    addMessageNotification(
+        targetUid: replyUid, chatId: chatId, id: widget.notificationId);
   }
 
   void addImgMessage(List<String> urlList) {
@@ -398,7 +417,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       setState(() {
         messageList
             .add({...data['messageItem'] as Map, ...createVoiceMessageData()});
-        addMessage(chatId, data['baseMessageData']!);
+        sendMessage(chatId, data['baseMessageData']!);
         Future.delayed(const Duration(milliseconds: 300)).then((value) {
           _scrollController.jumpTo(
             _scrollController.position.maxScrollExtent,
@@ -842,8 +861,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                       border: InputBorder.none,
                                       suffixIcon: showSendBtn
                                           ? buildIconButton(
-                                              Icons.send, handSendClick,
-                                              size: 20, iconColor: Colors.blue)
+                                              Icons.send, handleSendClick,
+                                              size: 20,
+                                              iconColor: context
+                                                  .read<CurrentPrimarySwatch>()
+                                                  .color)
                                           : const SizedBox(),
                                       isDense: true,
                                       contentPadding: const EdgeInsets.all(8),

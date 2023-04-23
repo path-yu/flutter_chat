@@ -11,6 +11,7 @@ import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_switch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/router/index.dart';
+import 'package:flutter_chat/utils/notification.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await initNotification();
   var currentUser = CurrentUser();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? brightnessValue = prefs.getString('currentBrightness');
@@ -70,11 +72,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  void init() async {}
-
   @override
   Widget build(BuildContext context) {
-    // init();
     return ScreenUtilInit(
         designSize: const Size(360, 690),
         minTextAdapt: true,

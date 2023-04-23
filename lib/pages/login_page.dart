@@ -127,7 +127,6 @@ class _LoginPageState extends State<LoginPage>
       Navigator.pushNamed(context, '/');
       EasyLoading.dismiss();
     } on FirebaseAuthException catch (e) {
-      print(e);
       EasyLoading.dismiss();
       showOkAlertDialog(context: context, message: e.message!);
     }

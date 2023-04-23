@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -128,6 +130,52 @@ void updateUserChatsAndChatsId(String uid, String targetUid, String chatId) {
   });
   db.collection(ChatsKey).doc(chatId).update({'id': chatId});
 }
+
+addMessageNotification({
+  required String targetUid,
+  required String chatId,
+  String? id,
+}) async {
+  var currentUser = getCurrentUser();
+  var uid = currentUser.uid;
+  var notificationDb = db.collection(NOTIFICATION);
+  var myNotificationData = await notificationDb
+      .where('uid', isEqualTo: uid)
+      .where('chatId', isEqualTo: chatId)
+      .get();
+  if (myNotificationData.docs.isEmpty) {
+    final random = Random();
+
+    // 生成一个 8 位随机数
+    final randomInt = random.nextInt((pow(10, 8) - 1).toInt());
+
+    // 生成一个随机的一位整数作为前导数字
+    final leadingDigit = random.nextInt(9) + 1;
+
+    // 将前导数字和随机数组合成一个 9 位整数类型的 ID
+    final localNotificationId = int.parse('$leadingDigit$randomInt');
+    notificationDb.add({
+      'type': 'newMessage',
+      'uid': currentUser.uid,
+      'targetUid': targetUid,
+      'count': 1,
+      'chatId': chatId,
+      'localNotificationId': localNotificationId,
+      'userName': currentUser.displayName
+    });
+  } else {
+    var target = myNotificationData.docs.first;
+    notificationDb.doc(target.id).update({'count': target.data()['count'] + 1});
+  }
+}
+
+updateMessageNotification(String id, int count) {
+  db.collection(NOTIFICATION).doc(id).update({'count': count});
+}
+
+// incrementMessageNotification(String id, int type, int count) {
+//   db.collection(NOTIFICATION).doc(id).update({'count': count + 1});
+// }
 
 Future<String> addNewChat(String targetUid) async {
   var currentUser = getCurrentUser();
@@ -281,10 +329,8 @@ Future<Map<String, dynamic>> handleChatData(
             ? '[voice]'
             : lastMessage['content'];
   }
-  data['showAvatar'] =
-      data['isMyRequest'] ? data['userPhotoURL'] : data['targetUserPhotoURL'];
-  data['showUserName'] =
-      data['isMyRequest'] ? data['userName'] : data['targetUserName'];
+  data['showAvatar'] = data['targetUserPhotoURL'];
+  data['showUserName'] = data['targetUserName'];
   data['appbarTitle'] = data['targetUserName'];
   return data;
 }
