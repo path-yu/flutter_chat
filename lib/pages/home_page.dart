@@ -84,10 +84,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           var data = e.data();
           data['id'] = e.id;
           messageNotificationMaps[e['chatId']] = data;
-          addNotification(
-              '${data['userName']}:${data['count']} new messages',
-              {'chatId': data['chatId'], 'notificationId': e.id},
-              e['localNotificationId']);
+          if (data['count'] != 0) {
+            addNotification(
+                '${data['userName']}:${data['count']} new messages',
+                {'chatId': data['chatId'], 'notificationId': e.id},
+                e['localNotificationId']);
+          }
         }
       });
     });
