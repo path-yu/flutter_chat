@@ -71,8 +71,8 @@ Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {
   EasyLoading.show(status: 'upload...');
   for (var entity in list) {
     var file = await entity.originFile;
-    final String path = file!.path;
-    String fileName = file.uri.pathSegments.last;
+    // final String path = file!.path;
+    String fileName = file!.uri.pathSegments.last;
     final mountainsRef = FirebaseStorage.instance.ref('messageImg/$fileName');
     Uint8List fileBytes = await file.readAsBytes();
     await mountainsRef.putData(fileBytes);

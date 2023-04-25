@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/pages/account/forget_password_page.dart';
+import 'package:flutter_chat/pages/chat/voice_calling_chat_page.dart';
 import 'package:flutter_chat/pages/contact/add_contact_page.dart';
 import 'package:flutter_chat/pages/account/change_password_page.dart';
 import 'package:flutter_chat/pages/chatGPT/chat_gpt_page.dart';
@@ -28,7 +29,8 @@ final authRoutes = {
   '/editUser': (BuildContext context) => const EditUserPage(),
   '/chatSetting': (BuildContext context) => const ChatSettingPage(),
   '/changePassword': (BuildContext context) => const ChangePasswordPage(),
-  '/chatGPT': (BuildContext context) => const ChatGPTPage()
+  '/chatGPT': (BuildContext context) => const ChatGPTPage(),
+  '/voiceCallingChat': (BuildContext context) => const VoiceCallingChatPage(),
 };
 MaterialPageRoute<Widget> getPage(String key, BuildContext context) {
   return MaterialPageRoute<Widget>(builder: (BuildContext context) {

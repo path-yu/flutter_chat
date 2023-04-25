@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:io';
 import 'package:extended_image/extended_image.dart';
@@ -16,9 +18,11 @@ import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat/chat_setting_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
+import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
@@ -502,6 +506,32 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     }
   }
 
+  handleVoiceCallingPress() async {
+    Navigator.pop(context);
+    // retrieve or request microphone permission
+    var currentAgoraEngine = context.read<CurrentAgoraEngine>();
+    currentAgoraEngine.channelName = getCurrentUser().email;
+    // currentAgoraEngine.uid = createRandomId();
+    EasyLoading.show(status: 'loading...');
+
+    try {
+      if (currentAgoraEngine.token == null) {
+        await currentAgoraEngine.fetchToken();
+      }
+      await currentAgoraEngine.joinChannel();
+      var callMessageData = await addCallMessage(
+          chatId, widget.parentChatData!, currentAgoraEngine.channelName!);
+      EasyLoading.dismiss();
+      toVoiceCallingPage(context, callMessageData);
+    } catch (e) {
+      EasyLoading.dismiss();
+      currentAgoraEngine.leaveChannel();
+      showToast('Connection failed, please try again');
+    }
+    // send request
+    // retrieve or request microphone permission
+  }
+
   @override
   Widget build(BuildContext context) {
     handleKeyboardOpen();
@@ -512,8 +542,36 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         : Colors.white;
     return HideKeyboard(
       child: Scaffold(
-        appBar: buildAppBar(widget.parentChatData!['appbarTitle'], context,
+        appBar: buildAppBar(widget.parentChatData!['targetUserName'], context,
             actions: [
+              buildIconButton(Icons.phone, () {
+                showCupertinoModalPopup<void>(
+                    context: context,
+                    builder: (BuildContext context) => CupertinoActionSheet(
+                          actions: <CupertinoActionSheetAction>[
+                            CupertinoActionSheetAction(
+                              onPressed: handleVoiceCallingPress,
+                              child: const Text('Voice calling'),
+                            ),
+                            CupertinoActionSheetAction(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Video calling'),
+                            ),
+                            CupertinoActionSheetAction(
+                              /// This parameter indicates the action would perform
+                              /// a destructive action such as delete or exit and turns
+                              /// the action's text color to red.
+                              isDestructiveAction: true,
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                          ],
+                        ));
+              }),
               buildIconButton(Icons.menu, () {
                 Navigator.push(
                     context,
@@ -550,6 +608,13 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                           : isDarkMode
                               ? Colors.black26
                               : Colors.white;
+                      TextStyle textStyle = TextStyle(
+                          color: isMyRequest
+                              ? Colors.white
+                              : isDarkMode
+                                  ? Colors.white
+                                  : Colors.black);
+
                       if (item['type'] == 'pic') {
                         bubble = GestureDetector(
                           onTap: () {
@@ -582,16 +647,16 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                         );
                       } else {
                         bubble = ChatBubble(
-                          backGroundColor: bubbleBackgroundColor,
-                          shadowColor:
-                              context.watch<CurrentBrightness>().isDarkMode
-                                  ? darkMainColor
-                                  : Colors.grey,
-                          clipper: ChatBubbleClipper4(
-                              type: isMyRequest
-                                  ? BubbleType.sendBubble
-                                  : BubbleType.receiverBubble),
-                          child: Container(
+                            backGroundColor: bubbleBackgroundColor,
+                            shadowColor:
+                                context.watch<CurrentBrightness>().isDarkMode
+                                    ? darkMainColor
+                                    : Colors.grey,
+                            clipper: ChatBubbleClipper4(
+                                type: isMyRequest
+                                    ? BubbleType.sendBubble
+                                    : BubbleType.receiverBubble),
+                            child: Container(
                               constraints: BoxConstraints(
                                 maxWidth: item['type'] == 'voice'
                                     ? screenWidth * 0.45
@@ -733,16 +798,29 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                             )
                                           ],
                                         ))
-                                  : SelectableText(
-                                      item['content'].toString(),
-                                      style: TextStyle(
-                                          color: isMyRequest
-                                              ? Colors.white
-                                              : isDarkMode
-                                                  ? Colors.white
-                                                  : Colors.black),
-                                    )),
-                        );
+                                  : item['type'] == 'callMessage'
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.phone,
+                                              color: textStyle.color,
+                                            ),
+                                            const SizedBox(
+                                              width: 10,
+                                            ),
+                                            SelectableText(
+                                                getCallMessageText(
+                                                    isMyRequest,
+                                                    item['status'],
+                                                    item['callTime']),
+                                                style: textStyle)
+                                          ],
+                                        )
+                                      : SelectableText(
+                                          item['content'].toString(),
+                                          style: textStyle),
+                            ));
                       }
                       return Container(
                         padding: EdgeInsets.all(ScreenUtil().setWidth(10)),

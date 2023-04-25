@@ -1,9 +1,12 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_chat/common/showToast.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/main.dart';
@@ -12,6 +15,7 @@ var db = FirebaseFirestore.instance;
 const UsersDbKey = 'Users';
 const NOTIFICATION = "notification";
 const ChatsKey = 'chats';
+const CALLMESSAGE = 'call_message';
 String chatGPTDbKey = 'chat_gpt_messages';
 
 addContactsNotification(
@@ -329,13 +333,78 @@ Future<Map<String, dynamic>> handleChatData(
             ? '[voice]'
             : lastMessage['content'];
   }
-  data['showAvatar'] = data['targetUserPhotoURL'];
-  data['showUserName'] = data['targetUserName'];
-  data['appbarTitle'] = data['targetUserName'];
   return data;
 }
 
 Map<String, dynamic> getChatDataById(List<dynamic> data, String chatId) {
   var chatDataIndex = data.indexWhere((element) => element['id'] == chatId);
   return data[chatDataIndex];
+}
+
+Future<Map<String, dynamic>> addCallMessage(
+    String chatId, Map targetUser, String channelName) async {
+  var currentUser = getCurrentUser();
+  var data = {
+    'chatId': chatId,
+    'targetUserId': targetUser['replyUid'],
+    'targetUserAvatar': targetUser['targetUserPhotoURL'],
+    'targetUserUserName': targetUser['targetUserName'],
+    'userName': currentUser.displayName,
+    'userAvatar': currentUser.photoURL,
+    'uid': currentUser.uid,
+    // 0 reset  1 wait  2 success 3 reject 4 cancel 5 fail
+    'status': 1,
+    'updateTime': DateTime.now().millisecondsSinceEpoch,
+    'channelName': channelName
+  };
+  var result = await db
+      .collection(CALLMESSAGE)
+      .where('chatId', isEqualTo: chatId)
+      .where('uid', isEqualTo: currentUser.uid)
+      .where('targetUserId', isEqualTo: targetUser['replyUid'])
+      .get();
+  // search user has already call
+  var hasCall = await db
+      .collection(CALLMESSAGE)
+      .where('targetUserId', isEqualTo: targetUser['replyUid'])
+      .where('status', isEqualTo: 2)
+      .get();
+  if (hasCall.docs.isNotEmpty) {
+    return showToast('The other party is busy on the line');
+  }
+  if (result.docs.isEmpty) {
+    var addResult = await db.collection(CALLMESSAGE).add(data);
+    data['id'] = addResult.id;
+  } else {
+    await db.collection(CALLMESSAGE).doc(result.docs.first.id).update({
+      'status': 1,
+    });
+    data['id'] = result.docs.first.id;
+  }
+  return data;
+}
+
+updateCallMessage(String id, int status) async {
+  await db.collection(CALLMESSAGE).doc(id).update({'status': status});
+}
+
+updateChatCallCancelMessage(
+    {required String chatId,
+    required int status,
+    required String targetUid,
+    int? callTime}) async {
+  var message = {
+    "type": "callMessage",
+    "content": 'Call message',
+    'uid': getCurrentUser().uid,
+    "createTime": DateTime.now().millisecondsSinceEpoch,
+    "targetUid": targetUid,
+    'callTime': 0,
+    'status': status
+  };
+  await db.collection(ChatsKey).doc(chatId).update({
+    'messages': FieldValue.arrayUnion([message]),
+    'targetMessages': FieldValue.arrayUnion([message]),
+    'updateTime': DateTime.now().millisecondsSinceEpoch
+  });
 }

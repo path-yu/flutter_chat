@@ -1,6 +1,7 @@
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/main.dart';
+import 'package:flutter_chat/pages/chat/voice_calling_chat_page.dart';
 
 String formatChatDate(int timestamp) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
@@ -85,4 +86,47 @@ List<List<dynamic>>? sliceArr(List arr, {size = 10}) {
       return result;
     }
   }
+}
+
+String getCallMessageText(bool isMyRequest, int status, int? timestamp) {
+  if (status == 4) {
+    return isMyRequest ? 'Cancelled, click to redial' : 'User canceled';
+  } else if (status == 5) {
+    return 'Voice call missed';
+  } else if (status == 3) {
+    return isMyRequest ? 'you have declined' : 'The other party has declined';
+  } else if (status == 2) {
+    return 'Call time ${formatDate(DateTime.fromMillisecondsSinceEpoch(timestamp!), [
+          hh,
+          ':',
+          mm,
+        ])}';
+  } else {
+    return '';
+  }
+}
+
+void toVoiceCallingPage(
+    BuildContext context, Map<String, dynamic> callMessageData) {
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (_, __, ___) => VoiceCallingChatPage(
+        callMessageData: callMessageData,
+      ),
+      transitionsBuilder: (_, animation, __, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          )),
+          child: child,
+        );
+      },
+    ),
+  );
 }

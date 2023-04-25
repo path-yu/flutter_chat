@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/components/home/home_contacts.dart';
 import 'package:flutter_chat/pages/components/home/home_messages.dart';
+import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_chat_setting.dart';
 import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/utils/notification.dart';
@@ -49,7 +51,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     });
     listenAddContactNotification();
     listenMessageNotification();
+    listenCallMessage();
     setNotificationListener();
+
+    context.read<CurrentAgoraEngine>().setupVoiceSDKEngine(
+      onJoinChannelSuccess: (p0, p1) {
+        print('join onJoinChannelSuccess');
+      },
+    );
   }
 
   void listenAddContactNotification() {
@@ -73,6 +82,44 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         setState(() {
           newFriendsBadgeCount = 0;
         });
+      }
+    });
+  }
+
+  void listenCallMessage() {
+    db
+        .collection(CALLMESSAGE)
+        .where('targetUserId', isEqualTo: getCurrentUser().uid)
+        .snapshots()
+        .listen((querySnapshot) {
+      var docs = querySnapshot.docs;
+      if (docs.isNotEmpty) {
+        var callMessageData = querySnapshot.docs.first.data();
+        callMessageData['id'] = querySnapshot.docs.first.id;
+        eventBus.fire(CallMessageChangeEvent(callMessageData));
+        var status = callMessageData['status'];
+        if (callMessageData['status'] == 1) {
+          toVoiceCallingPage(context, callMessageData);
+        }
+        if (status == 4 || status == 3 || status == 5) {
+          context.read<CurrentAgoraEngine>().leaveChannel();
+        }
+      }
+    });
+    db
+        .collection(CALLMESSAGE)
+        .where('uid', isEqualTo: getCurrentUser().uid)
+        .snapshots()
+        .listen((querySnapshot) {
+      var docs = querySnapshot.docs;
+      if (docs.isNotEmpty) {
+        var callMessageData = querySnapshot.docs.first.data();
+        callMessageData['id'] = querySnapshot.docs.first.id;
+        var status = callMessageData['status'];
+        eventBus.fire(CallMessageChangeEvent(callMessageData));
+        if (status == 4 || status == 3 || status == 5) {
+          context.read<CurrentAgoraEngine>().leaveChannel();
+        }
       }
     });
   }

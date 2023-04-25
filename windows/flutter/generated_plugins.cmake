@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  agora_rtc_engine
   awesome_notifications
   dynamic_color
+  iris_event
+  permission_handler_windows
   record_windows
   url_launcher_windows
 )

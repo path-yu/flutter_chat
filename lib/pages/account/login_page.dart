@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +26,8 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String email = '';
-  String password = '';
+  String email = '1974675011@qq.com';
+  String password = '123456';
   bool loginButtonLoading = false;
 
   @override
@@ -80,7 +82,7 @@ class _LoginPageState extends State<LoginPage>
         context.read<CurrentUser>().setCurrentUser(user.docs[0].data());
       }
       showMessage(context: context, title: 'login successful');
-      Navigator.pushNamed(context, '/');
+      Navigator.popAndPushNamed(context, '/');
       EasyLoading.dismiss();
     } on FirebaseAuthException catch (e) {
       EasyLoading.dismiss();
@@ -124,7 +126,7 @@ class _LoginPageState extends State<LoginPage>
         context.read<CurrentUser>().setCurrentUser(user.docs[0].data());
       }
       showMessage(context: context, title: 'login successful');
-      Navigator.pushNamed(context, '/');
+      Navigator.popAndPushNamed(context, '/');
       EasyLoading.dismiss();
     } on FirebaseAuthException catch (e) {
       EasyLoading.dismiss();
@@ -132,20 +134,21 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
+  final Widget svg = SvgPicture.asset(
+    'assets/google_icon.svg',
+    width: 20,
+    height: 20,
+  );
+  final Widget githubSvg = SvgPicture.asset(
+    'assets/github_icon.svg',
+    width: 20,
+    height: 20,
+  );
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final args = ModalRoute.of(context)!.settings.arguments;
-    final Widget svg = SvgPicture.asset(
-      'assets/google_icon.svg',
-      width: 20,
-      height: 20,
-    );
-    final Widget githubSvg = SvgPicture.asset(
-      'assets/github_icon.svg',
-      width: 20,
-      height: 20,
-    );
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: buildAppBar('Welcome to login', context,
@@ -215,7 +218,7 @@ class _LoginPageState extends State<LoginPage>
                                   showMessage(
                                       context: context,
                                       title: 'login successful');
-                                  Navigator.pushNamed(context, '/');
+                                  Navigator.popAndPushNamed(context, '/');
                                 } on FirebaseAuthException catch (e) {
                                   showOkAlertDialog(
                                       context: context, message: e.message!);

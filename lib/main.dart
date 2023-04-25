@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
+import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_chat_gpt_setting.dart';
 import 'package:flutter_chat/provider/current_chat_setting.dart';
@@ -56,7 +57,8 @@ void main() async {
       ChangeNotifierProvider(create: (_) => currentSwitch),
       ChangeNotifierProvider(create: (_) => currentPrimarySwatch),
       ChangeNotifierProvider(create: (_) => currentChatGPTSetting),
-      ChangeNotifierProvider(create: (_) => currentChatSetting)
+      ChangeNotifierProvider(create: (_) => currentChatSetting),
+      ChangeNotifierProvider(create: (_) => CurrentAgoraEngine())
     ],
     child: const MyApp(),
   ));
@@ -76,7 +78,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -106,7 +107,10 @@ class MyApp extends StatelessWidget {
                     return getPage('/login', context);
                   } else {
                     // 如果用户已登录，继续导航
-                    return getAuthPage(settings.name!, context);
+                    return MaterialPageRoute<Widget>(
+                        builder: (BuildContext context) {
+                      return authRoutes[settings.name]!(context);
+                    });
                   }
                 }
                 // 否则直接跳转到登录或注册

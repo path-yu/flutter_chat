@@ -171,7 +171,7 @@ class _HomeMessagesState extends State<HomeMessages> {
                                 child: buildBaseImage(
                                     width: ScreenUtil().setWidth(40),
                                     height: ScreenUtil().setHeight(40),
-                                    url: item['showAvatar']),
+                                    url: item['targetUserPhotoURL']),
                               ),
                             );
                             return ListTile(
@@ -203,7 +203,7 @@ class _HomeMessagesState extends State<HomeMessages> {
                                       child: avatarEle,
                                     )
                                   : avatarEle,
-                              title: buildOneLineText(item['showUserName']),
+                              title: buildOneLineText(item['targetUserName']),
                               subtitle: item['lastMessage'] != null
                                   ? buildOneLineText(
                                       item['lastMessage'],
