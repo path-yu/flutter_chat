@@ -134,14 +134,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                       .collection(UsersDbKey)
                                       .doc(userCredential.user!.uid)
                                       .set(data);
-                                  // ignore: use_build_context_synchronously
-                                  context
-                                      .read<CurrentUser>()
-                                      .setCurrentUser(data);
-                                  showMessage(
-                                      context: context,
-                                      title:
-                                          'register success, logging you in');
+                                  if (context.mounted) {
+                                    context
+                                        .read<CurrentUser>()
+                                        .setCurrentUser(data);
+                                    showMessage(
+                                        context: context,
+                                        title:
+                                            'register success, logging you in');
+                                  }
                                   FirebaseAuth.instance
                                       .signInWithEmailAndPassword(
                                           email: email, password: password)

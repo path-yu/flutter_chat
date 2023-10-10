@@ -78,7 +78,6 @@ class _LoginPageState extends State<LoginPage>
       if (user.docs.isEmpty) {
         saveUser(userCredential);
       } else {
-        // ignore: use_build_context_synchronously
         context.read<CurrentUser>().setCurrentUser(user.docs[0].data());
       }
       showMessage(context: context, title: 'login successful');
@@ -122,7 +121,6 @@ class _LoginPageState extends State<LoginPage>
       if (user.docs.isEmpty) {
         saveUser(userCredential);
       } else {
-        // ignore: use_build_context_synchronously
         context.read<CurrentUser>().setCurrentUser(user.docs[0].data());
       }
       showMessage(context: context, title: 'login successful');
@@ -147,8 +145,6 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final args = ModalRoute.of(context)!.settings.arguments;
-
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: buildAppBar('Welcome to login', context,

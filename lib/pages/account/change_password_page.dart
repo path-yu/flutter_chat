@@ -32,11 +32,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         await FirebaseAuth.instance.currentUser?.updatePassword(newPassword);
         await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: user.email!, password: newPassword);
-        showMessage(context: context, title: 'Change success');
+        if (context.mounted) {
+          showMessage(context: context, title: 'Change success');
+          Navigator.pop(context);
+        }
         setState(() {
           btnLoading = false;
         });
-        Navigator.pop(context);
       } on FirebaseAuthException catch (e) {
         showMessage(context: context, title: e.message.toString());
         setState(() {

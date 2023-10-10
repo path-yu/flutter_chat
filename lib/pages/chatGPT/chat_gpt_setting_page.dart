@@ -78,7 +78,9 @@ class _ChatGPTSettingPageState extends State<ChatGPTSettingPage> {
                       key: 1,
                     ),
                   ]);
-              context.read<CurrentChatGPTSetting>().changeMode(result!);
+              if (context.mounted) {
+                context.read<CurrentChatGPTSetting>().changeMode(result!);
+              }
             },
           )
         ],

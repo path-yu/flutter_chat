@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/main.dart';
@@ -341,7 +341,7 @@ Map<String, dynamic> getChatDataById(List<dynamic> data, String chatId) {
   return data[chatDataIndex];
 }
 
-Future<Map<String, dynamic>> addCallMessage(
+Future<Map<String, dynamic>?> addCallMessage(
     String chatId, Map targetUser, String channelName) async {
   var currentUser = getCurrentUser();
   var data = {
@@ -370,7 +370,8 @@ Future<Map<String, dynamic>> addCallMessage(
       .where('status', isEqualTo: 2)
       .get();
   if (hasCall.docs.isNotEmpty) {
-    return showToast('The other party is busy on the line');
+    showToast('The other party is busy on the line');
+    return null;
   }
   if (result.docs.isEmpty) {
     var addResult = await db.collection(CALLMESSAGE).add(data);

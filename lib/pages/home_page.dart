@@ -56,6 +56,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     context.read<CurrentAgoraEngine>().setupVoiceSDKEngine(
       onJoinChannelSuccess: (p0, p1) {
+        // ignore: avoid_print
         print('join onJoinChannelSuccess');
       },
     );

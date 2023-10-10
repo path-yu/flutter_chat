@@ -1,3 +1,5 @@
+// ignore_for_file: unused_result
+
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
@@ -6,7 +8,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/build_scale_animated_switcher.dart';
@@ -192,7 +194,6 @@ class _ChatGPTPageState extends State<ChatGPTPage>
       if (e.response!.data != null) {
         showAlertDialog(
             context: context, message: e.response!.data!['error']['message']);
-        // showGeneralDialog(context: context, pageBuilder: pageBuilder)
       }
       setState(() {
         messageList.last['content'] = '';
@@ -666,7 +667,7 @@ class _ChatGPTPageState extends State<ChatGPTPage>
                                     ? 'Your question'
                                     : 'Image description',
                                 border: InputBorder.none,
-                                filled: true, // dont forget this line
+                                filled: true, //
                               ),
                             ),
                             Row(

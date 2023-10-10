@@ -1,6 +1,8 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/eventBus/index.dart';
@@ -22,7 +24,7 @@ class VoiceCallingChatPage extends StatefulWidget {
 class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
   bool _isMuted = false;
   bool _isSpeakerOn = false;
-  int _callDuration = 0;
+  final int _callDuration = 0;
   bool loginButtonLoading = false;
   bool rejectButtonLoading = false;
   Map<String, dynamic> messageData = {};
@@ -46,12 +48,6 @@ class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
 
     setState(() {
       _isSpeakerOn = !_isSpeakerOn;
-    });
-  }
-
-  void _incrementCallDuration() {
-    setState(() {
-      _callDuration++;
     });
   }
 
@@ -86,7 +82,9 @@ class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
     if (loginButtonLoading) return;
     await updateCallMessage(messageData['id'], 3);
     await updateChatData(isMyRequest, 3);
-    Navigator.pop(context);
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
     setState(() {
       rejectButtonLoading = false;
     });
@@ -150,9 +148,8 @@ class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
     );
     return Scaffold(
       appBar: buildAppBar('Voice Call', context,
-          leading: buildIconButton(Icons.close_fullscreen_sharp, () {
-            print('close');
-          }, size: 20)),
+          leading:
+              buildIconButton(Icons.close_fullscreen_sharp, () {}, size: 20)),
       // appBar: AppBar(
       //   title: Text(widget.title),
       // ),

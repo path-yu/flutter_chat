@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
@@ -30,7 +32,7 @@ class _AddContactPageState extends State<AddContactPage> {
     }
     // search user
     var query = await searchUserByEmail(email);
-    if (query.docs.isEmpty) {
+    if (query.docs.isEmpty && context.mounted) {
       showMessage(context: context, title: 'User does not exist');
     } else {
       var user = query.docs[0].data();

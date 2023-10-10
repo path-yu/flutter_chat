@@ -47,10 +47,8 @@ pickerImgAndUpload(Function(String) successCallback) async {
             EasyLoading.show(status: 'uploading...');
             break;
           case TaskState.paused:
-            print("Upload is paused.");
             break;
           case TaskState.canceled:
-            print("Upload was canceled");
             break;
           case TaskState.error:
             // Handle unsuccessful uploads
@@ -85,7 +83,6 @@ Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {
 
 Future<String> uploadFile(File file) async {
   EasyLoading.show(status: 'upload...');
-  final String path = file.path;
   String fileName = file.uri.pathSegments.last;
   final mountainsRef = FirebaseStorage.instance.ref('messageVoice/$fileName');
   Uint8List fileBytes = await file.readAsBytes();

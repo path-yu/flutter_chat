@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 
 class FadeIndexedStack extends StatefulWidget {
@@ -17,10 +15,10 @@ class FadeIndexedStack extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FadeIndexedStackState createState() => _FadeIndexedStackState();
+  FadeIndexedStackState createState() => FadeIndexedStackState();
 }
 
-class _FadeIndexedStackState extends State<FadeIndexedStack>
+class FadeIndexedStackState extends State<FadeIndexedStack>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 

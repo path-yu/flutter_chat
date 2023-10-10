@@ -1,4 +1,3 @@
-// 因为不需要保持状态，所以这里继承的是StatelessWidget
 import 'package:flutter/material.dart';
 
 class HideKeyboard extends StatelessWidget {

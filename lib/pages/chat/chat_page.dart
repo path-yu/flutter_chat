@@ -6,7 +6,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/common/upload.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
@@ -73,7 +73,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   int sendNewMessageCount = 0;
   //
   int? prevSendMessageTime;
-  final Duration _duration = const Duration(milliseconds: 150);
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -513,23 +512,22 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     currentAgoraEngine.channelName = getCurrentUser().email;
     // currentAgoraEngine.uid = createRandomId();
     EasyLoading.show(status: 'loading...');
-
-    try {
-      if (currentAgoraEngine.token == null) {
-        await currentAgoraEngine.fetchToken();
+    var callMessageData = await addCallMessage(
+        chatId, widget.parentChatData!, currentAgoraEngine.channelName!);
+    if (callMessageData != null) {
+      try {
+        if (currentAgoraEngine.token == null) {
+          await currentAgoraEngine.fetchToken();
+        }
+        await currentAgoraEngine.joinChannel();
+        EasyLoading.dismiss();
+        toVoiceCallingPage(context, callMessageData);
+      } catch (e) {
+        EasyLoading.dismiss();
+        currentAgoraEngine.leaveChannel();
+        showToast('Connection failed, please try again');
       }
-      await currentAgoraEngine.joinChannel();
-      var callMessageData = await addCallMessage(
-          chatId, widget.parentChatData!, currentAgoraEngine.channelName!);
-      EasyLoading.dismiss();
-      toVoiceCallingPage(context, callMessageData);
-    } catch (e) {
-      EasyLoading.dismiss();
-      currentAgoraEngine.leaveChannel();
-      showToast('Connection failed, please try again');
     }
-    // send request
-    // retrieve or request microphone permission
   }
 
   @override
@@ -948,7 +946,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                       isDense: true,
                                       contentPadding: const EdgeInsets.all(8),
                                       fillColor: fillColor,
-                                      filled: true, // dont forget this line
+                                      filled: true,
                                     ),
                                   ),
                                 ),

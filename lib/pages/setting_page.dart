@@ -85,7 +85,7 @@ class _SettingPageState extends State<SettingPage> {
                 title: const Text('Theme color'),
                 value: Text(context.watch<CurrentPrimarySwatch>().colorName),
                 onPressed: (context) async {
-                  var result = await showBaseAlertDialog(
+                  await showBaseAlertDialog(
                     contentWidget: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

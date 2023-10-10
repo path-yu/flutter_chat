@@ -1,7 +1,7 @@
 // import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/components/build_base_image.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_chat/components/drawer.dart';

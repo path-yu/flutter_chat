@@ -1,7 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/common/showToast.dart';
+import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_chat/components/base_text_form_filed.dart';
 import 'package:flutter_chat/components/common.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
