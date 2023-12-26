@@ -2,6 +2,7 @@
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/defaultData.dart';
 import 'package:flutter_chat/common/firebase.dart';
@@ -29,6 +30,11 @@ class _LoginPageState extends State<LoginPage>
   String email = '1974675011@qq.com';
   String password = '123456';
   bool loginButtonLoading = false;
+//   GoogleSignInAccount? _currentUser;
+//   bool _isAuthorized = false; // has granted permissions?
+//   /// The scopes required by this application.
+// // #docregion Initialize
+  static const List<String> scopes = <String>['email', 'profile'];
 
   @override
   // 覆写`wantKeepAlive`返回`true`
@@ -56,20 +62,21 @@ class _LoginPageState extends State<LoginPage>
 
   signInWithGoogle() async {
     try {
+      EasyLoading.show(
+          status: 'loading...', maskType: EasyLoadingMaskType.black);
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser =
+          await GoogleSignIn(clientId: googleOAuthClientId, scopes: scopes)
+              .signIn();
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
-
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-      EasyLoading.show(
-          status: 'loading...', maskType: EasyLoadingMaskType.black);
       // Once signed in, return the UserCredential
       var userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
@@ -86,6 +93,8 @@ class _LoginPageState extends State<LoginPage>
     } on FirebaseAuthException catch (e) {
       EasyLoading.dismiss();
       showOkAlertDialog(context: context, message: e.message!);
+    } finally {
+      EasyLoading.dismiss();
     }
   }
 
@@ -115,8 +124,9 @@ class _LoginPageState extends State<LoginPage>
     try {
       GithubAuthProvider githubProvider = GithubAuthProvider();
 
-      var userCredential =
-          await FirebaseAuth.instance.signInWithProvider(githubProvider);
+      var userCredential = kIsWeb
+          ? await FirebaseAuth.instance.signInWithPopup(githubProvider)
+          : await FirebaseAuth.instance.signInWithProvider(githubProvider);
       var user = await searchUserByEmail(userCredential.user!.email!);
       if (user.docs.isEmpty) {
         saveUser(userCredential);
@@ -129,6 +139,8 @@ class _LoginPageState extends State<LoginPage>
     } on FirebaseAuthException catch (e) {
       EasyLoading.dismiss();
       showOkAlertDialog(context: context, message: e.message!);
+    } finally {
+      EasyLoading.dismiss();
     }
   }
 
@@ -263,6 +275,9 @@ class _LoginPageState extends State<LoginPage>
                   ),
                 ),
               ),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -284,6 +299,9 @@ class _LoginPageState extends State<LoginPage>
                         style: TextStyle(fontSize: ScreenUtil().setSp(12)),
                       ))
                 ],
+              ),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
               ),
               Transform.translate(
                 offset: const Offset(0, -6),

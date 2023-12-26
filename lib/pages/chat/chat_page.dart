@@ -2,8 +2,11 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/show_toast.dart';
@@ -22,14 +25,19 @@ import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
+import 'package:flutter_chat/utils/web_audio_recorder.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:record/record.dart';
+import 'package:path/path.dart' as p;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -68,11 +76,12 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   int maxSeconds = 120;
   bool stopRecording = false;
   bool isRecordEnd = false;
-  Record? record;
+  AudioRecorder? record;
   int startSeconds = 0;
   int sendNewMessageCount = 0;
-  //
+  final recordStream = <Uint8List>[];
   int? prevSendMessageTime;
+  WebAudioRecorder? webAudioRecorder;
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -174,41 +183,45 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       if (element?['load'] != null && element['load']) return;
       if (element?['type'] != 'voice') return;
       final player = AudioPlayer(); // Create a player
-      Future<Duration?> futureDuration;
+      Future<Duration?>? futureDuration;
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       var filePath = prefs.getString(element['content']);
-      var file = File(filePath!);
-      if (file.existsSync()) {
-        futureDuration =
-            player.setAudioSource(AudioSource.uri(Uri.file(filePath)));
+
+      if (filePath != null) {
+        var file = File(filePath);
+        if (file.existsSync()) {
+          futureDuration =
+              player.setAudioSource(AudioSource.uri(Uri.file(filePath)));
+        }
       } else {
-        futureDuration = player.setUrl(
-            // Load a URL
-            element['content'],
-            preload: true);
+        futureDuration = player.setUrl(element['content']);
       }
 
-      futureDuration.then((value) {
+      futureDuration!.then((value) async {
         setState(() {
           element['load'] = true;
           element['player'] = player;
         });
+        player.playerStateStream.listen((state) {
+          // play end
+          if (state.processingState == ProcessingState.completed) {
+            setState(() {
+              element['currentSliderValue'] = 100;
+              var lastTime = Duration(seconds: element['time']);
+              element['currentPlayTimeStr'] =
+                  '${lastTime.inMinutes}:${lastTime.inSeconds}';
+              element['currentPlayDuration'] = lastTime;
+              pause(element['controller'], player, element);
+              player.seek(const Duration(seconds: 0));
+            });
+          }
+        });
         player.positionStream.listen((event) {
           double currentSliderValue;
           String currentPlayTimeStr;
-          // play end
-          if (event.inMilliseconds == value!.inMilliseconds) {
-            pause(element['controller'], player, element);
-            currentSliderValue = 100;
-            var lastTime = Duration(seconds: element['time']);
-            currentPlayTimeStr = '${lastTime.inMinutes}:${lastTime.inSeconds}';
-            element['currentPlayDuration'] = lastTime;
-            // calc play progress
-          } else {
-            currentSliderValue =
-                (event.inSeconds / element['time'] * 100).round().toDouble();
-            currentPlayTimeStr = '${event.inMinutes}:${event.inSeconds}';
-          }
+          currentSliderValue =
+              (event.inSeconds / element['time'] * 100).round().toDouble();
+          currentPlayTimeStr = '${event.inMinutes}:${event.inSeconds}';
           setState(() {
             element['currentSliderValue'] = currentSliderValue;
             element['currentPlayTimeStr'] = currentPlayTimeStr;
@@ -260,6 +273,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
     _scrollController.dispose();
     _controller.dispose();
+    webAudioRecorder?.dispose();
+    record?.dispose();
     for (var element in messageList) {
       if (element['type'] == 'voice') {
         element['controller'].dispose();
@@ -372,6 +387,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     record?.dispose();
   }
 
+  Future<String> _getPath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return p.join(
+      dir.path,
+      'audio_${DateTime.now().millisecondsSinceEpoch}.m4a',
+    );
+  }
+
   void startRecording() async {
     startSeconds = 0;
     setState(() {
@@ -379,11 +402,18 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       stopRecording = false;
       isRecordEnd = false;
     });
-    record = Record();
+    record = AudioRecorder();
     // Check and request permission
     if (await record!.hasPermission()) {
       // Start recording
-      await record!.start();
+      if (kIsWeb) {
+        webAudioRecorder = WebAudioRecorder();
+        webAudioRecorder!.start();
+      } else {
+        final path = await _getPath();
+        await record!.start(const RecordConfig(), path: path);
+      }
+
       recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (stopRecording) {
           return;
@@ -411,29 +441,44 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   void handSendVoiceClick() async {
     closeRecording();
     var path = await record?.stop();
+    var url = '';
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (path != null) {
       File file = File(path);
       // Todo
-      var url = await uploadFile(file);
-      var data = createMessageData(
-          type: 'voice', payloadValue: {'time': startSeconds}, content: url);
-      setState(() {
-        messageList
-            .add({...data['messageItem'] as Map, ...createVoiceMessageData()});
-        sendMessage(chatId, data['baseMessageData']!);
-        Future.delayed(const Duration(milliseconds: 300)).then((value) {
-          _scrollController.jumpTo(
-            _scrollController.position.maxScrollExtent,
-          );
-        });
-      });
-      // load audio
-      Future.delayed(const Duration(seconds: 0)).then((value) {
-        loadMessageListVoiceData(list: [messageList.last]);
-      });
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      url = await uploadFile(file, context);
       prefs.setString(url, path);
+    } else {
+      // var metadata = await convertStreamToUint8List(recordStream);
+      final data = await webAudioRecorder!.stop();
+      if (isUint8ListAllZeros(data)) {
+        showOkAlertDialog(
+          context: context,
+          message:
+              'Microphone abnormality, Please check if the microphone is work',
+        );
+        return;
+      }
+      var fileName = 'audio_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      url = await uploadFileByStream(data, context, fileName);
     }
+    var data = createMessageData(
+        type: 'voice', payloadValue: {'time': startSeconds}, content: url);
+    setState(() {
+      messageList
+          .add({...data['messageItem'] as Map, ...createVoiceMessageData()});
+      sendMessage(chatId, data['baseMessageData']!);
+      Future.delayed(const Duration(milliseconds: 300)).then((value) {
+        _scrollController.jumpTo(
+          _scrollController.position.maxScrollExtent,
+        );
+      });
+    });
+    // load audio
+    Future.delayed(const Duration(seconds: 0)).then((value) {
+      loadMessageListVoiceData(list: [messageList.last]);
+    });
   }
 
   void handleVoicePlayClick(
@@ -446,8 +491,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         item['currentPlayDuration'] = const Duration(seconds: 0);
         item['currentPlayTimeStr'] = '0:0';
         item['currentSliderValue'] = 0.0;
-      });
-      player.seek(const Duration(seconds: 0)).then((value) {
         play(controller, player, item);
       });
     } else {
@@ -517,7 +560,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     if (callMessageData != null) {
       try {
         if (currentAgoraEngine.token == null) {
-          await currentAgoraEngine.fetchToken();
+          // await currentAgoraEngine.fetchToken();
         }
         await currentAgoraEngine.joinChannel();
         EasyLoading.dismiss();
@@ -994,9 +1037,15 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                           setState(() {
                                             stopRecording = !stopRecording;
                                           });
-                                          stopRecording
-                                              ? record?.pause()
-                                              : record?.resume();
+                                          if (kIsWeb) {
+                                            stopRecording
+                                                ? webAudioRecorder?.pause()
+                                                : webAudioRecorder?.resume();
+                                          } else {
+                                            stopRecording
+                                                ? record?.pause()
+                                                : record?.resume();
+                                          }
                                         },
                                   child: Text(stopRecording ? 'Start' : 'Stop'),
                                 ),

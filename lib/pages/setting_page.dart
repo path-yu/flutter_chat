@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/components/common.dart';
+import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_chat_setting.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
@@ -137,6 +138,7 @@ class _SettingPageState extends State<SettingPage> {
                       context: context,
                       title: 'Are you sure to exit?');
                   if (result == OkCancelResult.ok) {
+                    eventBus.fire(CloseSocketEvent());
                     FirebaseAuth.instance.signOut().then((value) {
                       Navigator.pushNamedAndRemoveUntil(
                           context, '/login', (route) => false);

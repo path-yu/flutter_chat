@@ -304,11 +304,12 @@ Future<Map<String, dynamic>> handleChatData(
   var targetUserData = targetUser.docs[0].data();
   data['userName'] = userData['userName'];
   data['chatId'] = chats.docs[0].id;
+  data['receivedUserOnline'] = targetUserData['online'] || false;
   data['userPhotoURL'] = userData['photoURL'];
   data['targetUserName'] = targetUserData['userName'];
   data['targetUserPhotoURL'] = targetUserData['photoURL'];
   data['isMyRequest'] = currentUser.uid == data['uid'];
-  data['showUpdateTime'] = formatChatDate(data['updateTime']);
+  data['showUpdateTime'] = formatChatDate(data['updateTime'] ?? '');
   data['replyUid'] = data['isMyRequest'] ? data['targetUid'] : data['uid'];
   // read message
 

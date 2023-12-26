@@ -40,6 +40,20 @@ class _HomeMessagesState extends State<HomeMessages> {
   }
 
   void listenChatData() {
+    eventBus.on<UserOnlineChangeEvent>().listen((event) {
+      if (event.type == 'userJoinedConnected' ||
+          event.type == 'userDisconnected') {
+        for (var chatId in event.chatIds) {
+          var chatIndex =
+              chatList.indexWhere((element) => element['id'] == chatId);
+          if (chatIndex != -1) {
+            chatList[chatIndex]['receivedUserOnline'] =
+                event.type == 'userJoinedConnected' ? true : false;
+          }
+        }
+        setState(() {});
+      }
+    });
     eventBus.on<UserChangeEvent>().listen((event) async {
       List chats = event.user['chats'];
       if (chats.length == chatList.length) {
@@ -121,7 +135,7 @@ class _HomeMessagesState extends State<HomeMessages> {
           actions: [
             IconButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/chatGPT');
+                  // Navigator.pushNamed(context, '/chatGPT');
                 },
                 icon: SvgPicture.asset(
                   'assets/chat_gpt.svg',
@@ -166,12 +180,10 @@ class _HomeMessagesState extends State<HomeMessages> {
                                 widget.messageNotificationMaps[item['id']];
                             var avatarEle = ClipRRect(
                               borderRadius: BorderRadius.circular(5.0),
-                              child: ClipOval(
-                                child: buildBaseImage(
-                                    width: ScreenUtil().setWidth(40),
-                                    height: ScreenUtil().setHeight(40),
-                                    url: item['targetUserPhotoURL']),
-                              ),
+                              child: buildBaseCircleImage(
+                                  width: ScreenUtil().setWidth(40),
+                                  height: ScreenUtil().setHeight(40),
+                                  url: item['targetUserPhotoURL']),
                             );
                             return ListTile(
                               onTap: () {
@@ -208,8 +220,22 @@ class _HomeMessagesState extends State<HomeMessages> {
                                       item['lastMessage'],
                                     )
                                   : null,
-                              trailing: Text(item['showUpdateTime'],
-                                  style: subtitleTextStyle),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(item['showUpdateTime'],
+                                      style: subtitleTextStyle),
+                                  SizedBox(
+                                    height: ScreenUtil().setHeight(5),
+                                  ),
+                                  Badge(
+                                    backgroundColor: item['receivedUserOnline']
+                                        ? Colors.green
+                                        : Colors.grey,
+                                  )
+                                ],
+                              ),
                             );
                           },
                           itemCount: chatList.length,

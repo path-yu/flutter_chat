@@ -1,8 +1,7 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/common/show_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
 
 class PhotoView extends StatefulWidget {
   final List<String> pics;
@@ -53,10 +52,10 @@ class _PhotoViewState extends State<PhotoView> {
                 onTap: () {
                   if (saveLook) return;
                   saveLook = true;
-                  GallerySaver.saveImage(widget.pics[currentIndex]).then((res) {
-                    showToast('Image is saved');
-                    saveLook = false;
-                  });
+                  // GallerySaver.saveImage(widget.pics[currentIndex]).then((res) {
+                  //   showToast('Image is saved');
+                  //   saveLook = false;
+                  // });
                 },
                 child: const Text('save'),
               ),

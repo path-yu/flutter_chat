@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/main.dart';
@@ -64,7 +66,7 @@ String getWeekday(int weekDay) {
     case 7:
       return 'Sunday';
     default:
-      return '未知';
+      return 'unknown';
   }
 }
 
@@ -129,4 +131,30 @@ void toVoiceCallingPage(
       },
     ),
   );
+}
+
+Future<Uint8List> convertStreamToUint8List(Stream<Uint8List> byteStream) async {
+  // 使用toList将所有的Uint8List合并到一个List中
+  List<Uint8List> byteList = await byteStream.toList();
+
+  // 计算所有Uint8List的总长度
+  int totalLength =
+      byteList.fold(0, (int sum, Uint8List list) => sum + list.length);
+
+  // 创建一个Uint8List，其长度为所有字节的总和
+  Uint8List result = Uint8List(totalLength);
+
+  // 将每个Uint8List的字节拷贝到结果Uint8List中
+  int offset = 0;
+  for (Uint8List list in byteList) {
+    result.setAll(offset, list);
+    offset += list.length;
+  }
+
+  return result;
+}
+
+bool isUint8ListAllZeros(Uint8List data) {
+  // 使用 every 函数检查是否所有元素都是 0
+  return data.every((element) => element == 0);
 }

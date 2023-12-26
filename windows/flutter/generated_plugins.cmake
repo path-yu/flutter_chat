@@ -3,10 +3,12 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  agora_rtc_engine
   awesome_notifications
+  cloud_firestore
   dynamic_color
-  iris_event
+  firebase_auth
+  firebase_core
+  firebase_storage
   permission_handler_windows
   record_windows
   url_launcher_windows

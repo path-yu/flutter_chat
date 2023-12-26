@@ -9,9 +9,6 @@ Widget buildBaseImage(
     height: height,
     fit: BoxFit.cover,
     image: CachedNetworkImageProvider(url),
-    placeholderBuilder: OctoPlaceholder.blurHash(
-      'LEHV6nWB2yk8pyo0adR*.7kCMdnj',
-    ),
   );
 }
 

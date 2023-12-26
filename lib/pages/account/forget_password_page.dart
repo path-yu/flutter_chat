@@ -50,8 +50,8 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
           FractionallySizedBox(
             widthFactor: 0.8,
             child: BaseTextFormFiled(
-              prefixIcon: Icons.lock,
-              obscureText: true,
+              obscureText: false,
+              keyboardType: TextInputType.emailAddress,
               onChanged: (value) {
                 email = value!;
               },

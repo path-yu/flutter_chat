@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:path/path.dart' as path;
 import 'package:firebase_storage/firebase_storage.dart';
@@ -81,13 +85,36 @@ Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {
   return result;
 }
 
-Future<String> uploadFile(File file) async {
+Future<String> uploadFile(File file, BuildContext context) async {
   EasyLoading.show(status: 'upload...');
   String fileName = file.uri.pathSegments.last;
   final mountainsRef = FirebaseStorage.instance.ref('messageVoice/$fileName');
-  Uint8List fileBytes = await file.readAsBytes();
-  await mountainsRef.putData(fileBytes);
-  var url = await mountainsRef.getDownloadURL();
-  EasyLoading.dismiss();
-  return url;
+  try {
+    Uint8List fileBytes = await file.readAsBytes();
+    await mountainsRef.putData(fileBytes);
+    var url = await mountainsRef.getDownloadURL();
+    return url;
+  } on FirebaseException catch (e) {
+    showOkAlertDialog(context: context, message: e.message!);
+    return ''; // 或者抛出异常，具体取决于你的
+  } finally {
+    EasyLoading.dismiss();
+  }
+}
+
+Future<String> uploadFileByStream(
+    Uint8List stream, BuildContext context, String fileName) async {
+  EasyLoading.show(status: 'upload...');
+  final mountainsRef = FirebaseStorage.instance.ref('messageVoice/$fileName');
+
+  try {
+    await mountainsRef.putData(stream);
+    var url = await mountainsRef.getDownloadURL();
+    return url;
+  } on FirebaseException catch (e) {
+    showOkAlertDialog(context: context, message: e.message!);
+    return ''; // 或者抛出异常，具体取决于你的需求
+  } finally {
+    EasyLoading.dismiss();
+  }
 }

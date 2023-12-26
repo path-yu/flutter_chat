@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/utils.dart';
@@ -10,6 +12,8 @@ import 'package:flutter_chat/provider/current_user.dart';
 import 'package:flutter_chat/utils/notification.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -53,13 +57,30 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     listenMessageNotification();
     listenCallMessage();
     setNotificationListener();
+    initWebSocket();
+  }
 
-    context.read<CurrentAgoraEngine>().setupVoiceSDKEngine(
-      onJoinChannelSuccess: (p0, p1) {
-        // ignore: avoid_print
-        print('join onJoinChannelSuccess');
-      },
-    );
+  void initWebSocket() async {
+    final wsUrl = Uri.parse(
+        'ws://localhost:8080/start_web_socket?userId=${getCurrentUser().uid}');
+    // final wsUrl =  Uri.parse('wss://old-heron-24.deno.dev/start_web_socket');
+    final channel = WebSocketChannel.connect(wsUrl);
+    eventBus.on<CloseSocketEvent>().listen((event) {
+      channel.sink.close();
+    });
+    channel.stream.listen((message) {
+      // channel.sink.add('received!');
+      var data = jsonDecode(message);
+      // update online status
+      if (data['type'] == 'userJoinedConnected') {
+        eventBus.fire(
+            UserOnlineChangeEvent(data['chatIds'], 'userJoinedConnected'));
+      }
+      if (data['type'] == 'userDisconnected') {
+        eventBus
+            .fire(UserOnlineChangeEvent(data['chatIds'], 'userDisconnected'));
+      }
+    });
   }
 
   void listenAddContactNotification() {

@@ -22,8 +22,8 @@ class VoiceCallingChatPage extends StatefulWidget {
 }
 
 class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
-  bool _isMuted = false;
-  bool _isSpeakerOn = false;
+  final bool _isMuted = false;
+  final bool _isSpeakerOn = false;
   final int _callDuration = 0;
   bool loginButtonLoading = false;
   bool rejectButtonLoading = false;
@@ -31,28 +31,28 @@ class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
 
   void _toggleMute() async {
     // await await _engine.muteLocalAudioStream(!openMicrophone);
-    await context
-        .read<CurrentAgoraEngine>()
-        .agoraEngine
-        .enableLocalAudio(!_isMuted);
-    setState(() {
-      _isMuted = !_isMuted;
-    });
+    // await context
+    //     .read<CurrentAgoraEngine>()
+    //     .agoraEngine
+    //     .enableLocalAudio(!_isMuted);
+    // setState(() {
+    //   _isMuted = !_isMuted;
+    // });
   }
 
   void _toggleSpeaker() async {
-    await context
-        .read<CurrentAgoraEngine>()
-        .agoraEngine
-        .setEnableSpeakerphone(!_isSpeakerOn);
+    // await context
+    //     .read<CurrentAgoraEngine>()
+    //     .agoraEngine
+    //     .setEnableSpeakerphone(!_isSpeakerOn);
 
-    setState(() {
-      _isSpeakerOn = !_isSpeakerOn;
-    });
+    // setState(() {
+    //   _isSpeakerOn = !_isSpeakerOn;
+    // });
   }
 
   void handleCancelOrEndCallPress(bool isMyRequest) {
-    context.read<CurrentAgoraEngine>().agoraEngine.leaveChannel();
+    // context.read<CurrentAgoraEngine>().agoraEngine.leaveChannel();
 
     Navigator.of(context).pop();
     // cancel
@@ -68,7 +68,7 @@ class _VoiceCallingChatPageState extends State<VoiceCallingChatPage> {
     });
     var currentAgoraEngine = context.read<CurrentAgoraEngine>();
     currentAgoraEngine.channelName = messageData['channelName'];
-    await currentAgoraEngine.fetchToken();
+    // await currentAgoraEngine.fetchToken();
     await currentAgoraEngine.joinChannel();
     setState(() {
       loginButtonLoading = false;

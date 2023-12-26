@@ -28,6 +28,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   await initNotification();
   var currentUser = CurrentUser();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -65,12 +66,13 @@ void main() async {
   SystemUiOverlayStyle systemUiOverlayStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   );
-  window.onPlatformBrightnessChanged = () {
+  WidgetsBinding.instance.platformDispatcher.onPlatformBrightnessChanged = () {
     if (navigatorKey.currentContext!.read<CurrentBrightness>().brightness ==
         'system') {
       navigatorKey.currentContext!
           .read<CurrentBrightness>()
-          .changeSystemBrightness(window.platformBrightness);
+          .changeSystemBrightness(
+              WidgetsBinding.instance.platformDispatcher.platformBrightness);
     }
   };
   SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
