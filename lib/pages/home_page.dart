@@ -84,9 +84,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void initWebSocket() async {
-    final wsUrl =
-        Uri.parse('ws://localhost:8081?userId=${getCurrentUser().uid}');
-    // final wsUrl =  Uri.parse('wss://old-heron-24.deno.dev/start_web_socket');
+    final wsUrl = Uri.parse(kDebugMode
+        ? 'ws://localhost:8080/start_web_socket?userId=${getCurrentUser().uid}'
+        : 'wss://old-heron-24.deno.dev/start_web_socket?userId=${getCurrentUser().uid}');
     webSocketChannel = WebSocketChannel.connect(wsUrl);
 
     eventBus.on<CloseSocketEvent>().listen((event) {
