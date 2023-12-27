@@ -16,6 +16,11 @@ class UserOnlineChangeEvent {
 
 class CloseSocketEvent {}
 
+class TypingEvent {
+  bool isTyping;
+  TypingEvent(this.isTyping);
+}
+
 class ChatsChangeEvent {
   List<dynamic> value;
 

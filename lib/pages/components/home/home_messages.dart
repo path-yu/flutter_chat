@@ -135,7 +135,7 @@ class _HomeMessagesState extends State<HomeMessages> {
           actions: [
             IconButton(
                 onPressed: () {
-                  // Navigator.pushNamed(context, '/chatGPT');
+                  Navigator.pushNamed(context, '/chatGPT');
                 },
                 icon: SvgPicture.asset(
                   'assets/chat_gpt.svg',

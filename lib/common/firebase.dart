@@ -293,10 +293,12 @@ void addMultipleMessage(String id, List<Map> messages) {
   });
 }
 
+var map = {};
+
 Future<Map<String, dynamic>> handleChatData(
     QuerySnapshot<Map<String, dynamic>> chats) async {
-  var currentUser = getCurrentUser();
   var data = chats.docs[0].data();
+  var currentUser = getCurrentUser();
   var user = await searchUserByUid(currentUser.uid);
   var targetUser = await searchUserByUid(
       currentUser.uid == data['targetUid'] ? data['uid'] : data['targetUid']);
@@ -312,7 +314,6 @@ Future<Map<String, dynamic>> handleChatData(
   data['showUpdateTime'] = formatChatDate(data['updateTime'] ?? '');
   data['replyUid'] = data['isMyRequest'] ? data['targetUid'] : data['uid'];
   // read message
-
   List messages =
       data['isMyRequest'] ? [...data['messages']] : [...data['targetMessages']];
 

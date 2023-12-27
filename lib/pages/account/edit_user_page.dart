@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chat/common/upload.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _EditUserPageState extends State<EditUserPage> {
       setState(() {
         avatar = url;
       });
-    });
+    }, context: context, cropped: !kIsWeb);
   }
 
   @override
@@ -80,12 +81,10 @@ class _EditUserPageState extends State<EditUserPage> {
                         onTap: handleOpenFilePickerClick,
                         child: Stack(children: [
                           Positioned(
-                            child: ClipOval(
-                              child: buildBaseImage(
-                                  width: ScreenUtil().setWidth(60),
-                                  height: ScreenUtil().setHeight(60),
-                                  url: avatar),
-                            ),
+                            child: buildBaseCircleImage(
+                                width: ScreenUtil().setWidth(60),
+                                height: ScreenUtil().setHeight(60),
+                                url: avatar),
                           ),
                           Positioned(
                               child: SizedBox(

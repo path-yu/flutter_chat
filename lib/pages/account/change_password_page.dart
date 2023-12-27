@@ -91,10 +91,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     hintText: 'your new password',
                   ),
                   SizedBox(
-                    height: ScreenUtil().setHeight(40),
+                    height: ScreenUtil().setHeight(20),
                   ),
                   FractionallySizedBox(
-                      widthFactor: 0.8,
+                      widthFactor: 1,
                       child: ElevatedButton(
                           onPressed: handleConfirmClick,
                           child: btnLoading

@@ -1,11 +1,11 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
 import 'dart:async';
-import 'dart:html';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:js';
 import 'dart:typed_data';
-import 'package:flutter_chat/common/show_toast.dart';
+
+import 'package:universal_html/html.dart';
 
 class WebAudioRecorder {
   MediaRecorder? _mediaRecorder;
@@ -15,6 +15,7 @@ class WebAudioRecorder {
     final stream = await window.navigator.mediaDevices?.getUserMedia({
       'audio': true,
     });
+    print(stream);
     _mediaRecorder = MediaRecorder(stream!);
     _mediaRecorder!.addEventListener('dataavailable', _handleDataAvailable);
     _mediaRecorder!.addEventListener('stop', _handleStop);
@@ -27,7 +28,6 @@ class WebAudioRecorder {
     _metadataCompleter!.complete(await blobToUint8List(audioBlob));
     // Do something with the recorded audio URL, like playing or downloading
     print('Recorded Audio URL: $audioUrl');
-    download(audioUrl);
     // Clear recorded chunks for the next recording
     _recordedChunks.clear();
   }

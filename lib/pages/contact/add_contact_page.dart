@@ -48,10 +48,10 @@ class _AddContactPageState extends State<AddContactPage> {
       child: Scaffold(
         appBar: buildAppBar('Add contacts', context),
         body: Container(
-          margin: EdgeInsets.only(top: ScreenUtil().setHeight(30)),
           padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(25)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Row(
                 children: [

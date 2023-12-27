@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
+import 'dart:js';
 import 'dart:typed_data';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,14 +14,17 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import 'package:image_cropper/image_cropper.dart';
 
-pickerImgAndUpload(Function(String) successCallback) async {
+pickerImgAndUpload(Function(String) successCallback,
+    {bool cropped = true, required BuildContext context}) async {
   final ImagePicker picker = ImagePicker();
+  CroppedFile? croppedFile;
+  Uint8List? fileBytes;
+  String? filePath;
   // Pick an image
   final XFile? result = await picker.pickImage(source: ImageSource.gallery);
-
   var currentUser = getCurrentUser();
-  if (result != null) {
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
+  if (result != null && cropped == true) {
+    croppedFile = await ImageCropper().cropImage(
       sourcePath: result.path,
       aspectRatioPresets: [
         CropAspectRatioPreset.square,
@@ -32,40 +36,45 @@ pickerImgAndUpload(Function(String) successCallback) async {
         IOSUiSettings(
           title: 'Cropper',
         ),
-        // WebUiSettings(
-        //   context: context,
-        // ),
+        WebUiSettings(
+          context: context,
+          enableResize: true,
+        ),
       ],
     );
-    if (croppedFile != null) {
-      Uint8List fileBytes = await croppedFile.readAsBytes();
-      final mountainsRef = FirebaseStorage.instance.ref(
-          'uploads/${currentUser.uid}_avatar${path.extension(croppedFile.path)}');
-
-      mountainsRef
-          .putData(fileBytes)
-          .snapshotEvents
-          .listen((taskSnapshot) async {
-        switch (taskSnapshot.state) {
-          case TaskState.running:
-            EasyLoading.show(status: 'uploading...');
-            break;
-          case TaskState.paused:
-            break;
-          case TaskState.canceled:
-            break;
-          case TaskState.error:
-            // Handle unsuccessful uploads
-            break;
-          case TaskState.success:
-            EasyLoading.dismiss();
-            var res = await taskSnapshot.ref.getDownloadURL();
-            successCallback(res);
-            break;
-        }
-      });
+  }
+  if (croppedFile != null) {
+    fileBytes = await croppedFile.readAsBytes();
+    filePath = croppedFile.path;
+  } else {
+    if (result != null) {
+      fileBytes = await result.readAsBytes();
+      filePath = result.path;
     }
   }
+  if (fileBytes == null) return;
+  final mountainsRef = FirebaseStorage.instance
+      .ref('uploads/${currentUser.uid}_avatar${path.extension(filePath!)}');
+  mountainsRef.putData(fileBytes).snapshotEvents.listen((taskSnapshot) async {
+    switch (taskSnapshot.state) {
+      case TaskState.running:
+        EasyLoading.show(status: 'uploading...');
+        break;
+      case TaskState.paused:
+        break;
+      case TaskState.canceled:
+        break;
+      case TaskState.error:
+        print('error');
+        // Handle unsuccessful uploads
+        break;
+      case TaskState.success:
+        EasyLoading.dismiss();
+        var res = await taskSnapshot.ref.getDownloadURL();
+        successCallback(res);
+        break;
+    }
+  });
 }
 
 Future<List<String>> uploadAssetsImage(List<AssetEntity> list) async {

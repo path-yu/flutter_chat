@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:date_format/date_format.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_chat/pages/chat/voice_calling_chat_page.dart';
 
 String formatChatDate(int timestamp) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  if (navigatorKey.currentState == null) return '';
   var timeStr =
       TimeOfDay.fromDateTime(date).format(navigatorKey.currentState!.context);
   if (date.year == DateTime.now().year) {
@@ -24,6 +26,7 @@ String formatChatDate(int timestamp) {
 
 String formatMessageDate(int timestamp) {
   DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  if (navigatorKey.currentState == null) return '';
   var timeStr =
       TimeOfDay.fromDateTime(date).format(navigatorKey.currentState!.context);
   if (isToday(date)) {
@@ -157,4 +160,21 @@ Future<Uint8List> convertStreamToUint8List(Stream<Uint8List> byteStream) async {
 bool isUint8ListAllZeros(Uint8List data) {
   // 使用 every 函数检查是否所有元素都是 0
   return data.every((element) => element == 0);
+}
+
+class Debouncer {
+  final int milliseconds;
+  void Function(dynamic)? action;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds, required this.action});
+
+  run([dynamic argument]) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), () {
+      if (action != null) {
+        action!(argument);
+      }
+    });
+  }
 }

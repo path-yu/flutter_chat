@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_chat/components/fade_indexed_stack.dart';
 import 'package:flutter_chat/components/hide_key_bord.dart';
 import 'package:flutter_chat/eventBus/index.dart';
 import 'package:flutter_chat/pages/chat/chat_setting_page.dart';
+import 'package:flutter_chat/pages/home_page.dart';
 import 'package:flutter_chat/pages/photo_view.dart';
 import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
@@ -37,7 +39,7 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:record/record.dart';
 import 'package:path/path.dart' as p;
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'package:web_socket_channel/status.dart' as status;
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
@@ -82,6 +84,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final recordStream = <Uint8List>[];
   int? prevSendMessageTime;
   WebAudioRecorder? webAudioRecorder;
+  // The other person is typing status
+  bool isOtherPersonTyping = false;
+  Timer? typingTimer; //  handle delayed tasks
+  // 创建一个 FocusNode
+  final FocusNode _focusNode = FocusNode();
   List<String> get pics => messageList
       .where((element) => element['type'] == 'pic')
       .toList()
@@ -91,7 +98,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     if (widget.parentChatData == null) {
       return;
     }
@@ -108,6 +114,20 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         updateMessageNotification(widget.notificationId!, 0);
       }
     });
+    initEventListener();
+    initScrollListener();
+    // 监听 FocusNode 的焦点变化
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        scrollToBottom();
+      }
+    });
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollController.jumpTo(widget.initialScrollOffset!));
+    initListenerMessage();
+  }
+
+  initEventListener() {
     eventBus.on<ChatsChangeEvent>().listen((data) {
       var index = data.value.indexWhere((element) => element['id'] == chatId);
       if (index != -1) {
@@ -134,6 +154,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         });
       }
     });
+    eventBus.on<TypingEvent>().listen((event) {
+      setState(() {
+        isOtherPersonTyping = event.isTyping;
+      });
+    });
+  }
+
+  initScrollListener() {
     _scrollController.addListener(() {
       var moveDiff = _scrollController.offset - offset;
       if (moveDiff > 0 && offset != 0) {
@@ -162,9 +190,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         setState(() => showToBottomBtn = false);
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollController.jumpTo(widget.initialScrollOffset!));
-    initListenerMessage();
   }
 
   List<Map> handleVoiceMessageList(List<Map> list) {
@@ -254,14 +279,29 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     };
   }
 
+  Debouncer debouncerSendTypingEvent = Debouncer(
+    milliseconds: 300, // 1秒的延迟
+    action: (replyUid) {
+      webSocketChannel?.sink.add(jsonEncode(
+          {'type': 'isTyping', 'value': true, 'receiveUid': replyUid}));
+    },
+  );
+
   void initListenerMessage() {
     _controller.addListener(() {
+      typingTimer?.cancel();
+      // 清除之前的延迟任务
+      debouncerSendTypingEvent.run(replyUid);
       setState(() {
         if (_controller.text.contains('\n')) {
           showSendBtn = true;
         } else {
           showSendBtn = _controller.text.trim().isNotEmpty;
         }
+      });
+      typingTimer = Timer(const Duration(milliseconds: 1000), () {
+        webSocketChannel?.sink.add(jsonEncode(
+            {'type': 'isTyping', 'value': false, 'receiveUid': replyUid}));
       });
     });
   }
@@ -282,6 +322,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       }
     }
     clearTimer();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -403,6 +444,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       isRecordEnd = false;
     });
     record = AudioRecorder();
+    if (kIsWeb) {}
     // Check and request permission
     if (await record!.hasPermission()) {
       // Start recording
@@ -435,6 +477,9 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       setState(() {
         indexedStackIndex = 1;
       });
+    } else {
+      showOkAlertDialog(
+          message: 'Please enable recording permission', context: context);
     }
   }
 
@@ -481,7 +526,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
   }
 
-  void handleVoicePlayClick(
+  void handleVoicePlayOrPauseClick(
     Map<dynamic, dynamic> item,
   ) {
     var controller = item['controller'] as AnimationController;
@@ -530,6 +575,25 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     item['pause'] = true;
   }
 
+  void handlePickerImage() async {
+    if (kIsWeb) {
+      pickerImgAndUpload((url) {
+        addImgMessage([url]);
+      }, cropped: false, context: context);
+    } else {
+      final List<AssetEntity>? result = await AssetPicker.pickAssets(
+        context,
+        pickerConfig: AssetPickerConfig(
+            maxAssets: 3,
+            themeColor: context.read<CurrentPrimarySwatch>().color),
+      );
+      if (result != null) {
+        var urlList = await uploadAssetsImage(result);
+        addImgMessage(urlList);
+      }
+    }
+  }
+
   void handleSliderChange(double value, int index) {
     setState(() {
       var item = messageList[index];
@@ -539,14 +603,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     });
   }
 
-  void handleKeyboardOpen() {
-    var keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
-    if (keyboardVisible) {
-      Future.delayed(const Duration(milliseconds: 150)).then((value) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      });
-    }
-  }
+  // void handleKeyboardOpen() {
+  //   var keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
+  //   if (keyboardVisible) {
+  //     Future.delayed(const Duration(milliseconds: 150)).then((value) {
+  //       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  //     });
+  //   }
+  // }
 
   handleVoiceCallingPress() async {
     Navigator.pop(context);
@@ -575,7 +639,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    handleKeyboardOpen();
+    // handleKeyboardOpen();
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     var fillColor = context.watch<CurrentBrightness>().isDarkMode
@@ -583,7 +647,11 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         : Colors.white;
     return HideKeyboard(
       child: Scaffold(
-        appBar: buildAppBar(widget.parentChatData!['targetUserName'], context,
+        appBar: buildAppBar(
+            isOtherPersonTyping
+                ? 'User is typing...'
+                : widget.parentChatData!['targetUserName'],
+            context,
             actions: [
               buildIconButton(Icons.phone, () {
                 showCupertinoModalPopup<void>(
@@ -732,14 +800,14 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                                   child: Center(
                                                     child: GestureDetector(
                                                       onTap: () =>
-                                                          handleVoicePlayClick(
+                                                          handleVoicePlayOrPauseClick(
                                                               item),
                                                       child: AnimatedIcon(
                                                         icon: AnimatedIcons
                                                             .play_pause,
                                                         progress:
                                                             item['animation'],
-                                                        size: 20.0,
+                                                        size: 25.0,
                                                         color: Colors.white,
                                                         semanticLabel:
                                                             'Show menu',
@@ -889,7 +957,9 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                           left: ScreenUtil().setWidth(10)),
                                       child: Opacity(
                                         opacity: 0.5,
-                                        child: Text(item['showCreateTime'],
+                                        child: Text(
+                                            formatMessageDate(
+                                                item['createTime']),
                                             style: TextStyle(
                                                 fontSize:
                                                     ScreenUtil().setSp(10))),
@@ -945,22 +1015,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                 Transform.translate(
                                   offset: const Offset(0, -2),
                                   child: GestureDetector(
-                                    onTap: () async {
-                                      final List<AssetEntity>? result =
-                                          await AssetPicker.pickAssets(
-                                        context,
-                                        pickerConfig: AssetPickerConfig(
-                                            maxAssets: 3,
-                                            themeColor: context
-                                                .read<CurrentPrimarySwatch>()
-                                                .color),
-                                      );
-                                      if (result != null) {
-                                        var urlList =
-                                            await uploadAssetsImage(result);
-                                        addImgMessage(urlList);
-                                      }
-                                    },
+                                    onTap: handlePickerImage,
                                     child: const Icon(
                                       Icons.image,
                                     ),
@@ -970,6 +1025,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                                   child: TextField(
                                     controller: _controller,
                                     keyboardType: TextInputType.multiline,
+                                    focusNode: _focusNode,
                                     minLines:
                                         1, //Normal textInputField will be displayed
                                     maxLines:

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chat/common/firebase.dart';
 import 'package:flutter_chat/common/utils.dart';
 import 'package:flutter_chat/eventBus/index.dart';
@@ -13,7 +15,7 @@ import 'package:flutter_chat/utils/notification.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/status.dart' as status;
+import "package:universal_html/html.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,12 +24,15 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+WebSocketChannel? webSocketChannel;
+
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int currentIndex = 0;
   int newFriendsBadgeCount = 0;
   // int newMessageCount = 0;
   Map messageNotificationMaps = {};
   final AudioPlayer _audioPlayer = AudioPlayer();
+  AudioElement? audio;
   int get newMessageCount {
     return messageNotificationMaps.values.fold(0, (previousValue, element) {
       int count = element['count'];
@@ -35,6 +40,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     });
   }
 
+  List<int>? message_soundBytes;
   void handleOnTap(int? index) {
     setState(() {
       currentIndex = index!;
@@ -58,29 +64,53 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     listenCallMessage();
     setNotificationListener();
     initWebSocket();
+    _audioPlayer.setAsset('assets/new_message_sound.wav');
+    if (kIsWeb) {
+      rootBundle.load('assets/new_message_sound.wav').then((value) {
+        message_soundBytes = value.buffer.asUint8List();
+        audio = AudioElement(
+            'data:audio/mp3;base64,${base64Encode(message_soundBytes!)}');
+        audio!.load();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    webSocketChannel?.sink.close();
+    print('close');
   }
 
   void initWebSocket() async {
-    final wsUrl = Uri.parse(
-        'ws://localhost:8080/start_web_socket?userId=${getCurrentUser().uid}');
+    final wsUrl =
+        Uri.parse('ws://localhost:8081?userId=${getCurrentUser().uid}');
     // final wsUrl =  Uri.parse('wss://old-heron-24.deno.dev/start_web_socket');
-    final channel = WebSocketChannel.connect(wsUrl);
+    webSocketChannel = WebSocketChannel.connect(wsUrl);
+
     eventBus.on<CloseSocketEvent>().listen((event) {
-      channel.sink.close();
+      webSocketChannel?.sink.close();
     });
-    channel.stream.listen((message) {
-      // channel.sink.add('received!');
-      var data = jsonDecode(message);
-      // update online status
-      if (data['type'] == 'userJoinedConnected') {
-        eventBus.fire(
-            UserOnlineChangeEvent(data['chatIds'], 'userJoinedConnected'));
-      }
-      if (data['type'] == 'userDisconnected') {
-        eventBus
-            .fire(UserOnlineChangeEvent(data['chatIds'], 'userDisconnected'));
-      }
-    });
+    await webSocketChannel?.ready;
+    webSocketChannel?.stream.listen(
+      (message) {
+        // channel.sink.add('received!');
+        var data = jsonDecode(message);
+        // update online status
+        if (data['type'] == 'userJoinedConnected') {
+          eventBus.fire(
+              UserOnlineChangeEvent(data['chatIds'], 'userJoinedConnected'));
+        }
+        if (data['type'] == 'userDisconnected') {
+          eventBus
+              .fire(UserOnlineChangeEvent(data['chatIds'], 'userDisconnected'));
+        }
+        if (data['type'] == 'isTyping') {
+          eventBus.fire(TypingEvent(data['value']));
+        }
+      },
+    );
   }
 
   void listenAddContactNotification() {
@@ -160,16 +190,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           messageNotificationMaps[e['chatId']] = data;
           if (data['count'] != 0 &&
               context.read<CurrentChatSetting>().openNotification) {
-            addNotification(
-                '${data['userName']}:${data['count']} new messages',
-                {'chatId': data['chatId'], 'notificationId': e.id},
-                e['localNotificationId']);
+            // not support web
+            if (!kIsWeb) {
+              addNotification(
+                  '${data['userName']}:${data['count']} new messages',
+                  {'chatId': data['chatId'], 'notificationId': e.id},
+                  e['localNotificationId']);
+            }
             if (context.read<CurrentChatSetting>().openNotificationSound) {
-              _audioPlayer
-                  .setAsset('assets/new_message_sound.wav')
-                  .then((value) {
+              if (kIsWeb) {
+                audio?.play();
+              } else {
+                // An error will be reported on the web
                 _audioPlayer.play();
-              });
+              }
             }
           }
         }
