@@ -43,6 +43,12 @@ flutter run -d chrome --web-renderer html
 flutter build apk --obfuscate --split-debug-info=splitMap --target-platform android-arm,android-arm64,android-x64 --split-per-abi
 ```
 
+## build web
+
+```shell
+flutter build web --output=web_build
+```
+
 ## test DeepLink
 
 ```shell
