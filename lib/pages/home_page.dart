@@ -68,8 +68,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (kIsWeb) {
       rootBundle.load('assets/new_message_sound.wav').then((value) {
         message_soundBytes = value.buffer.asUint8List();
-        audio = AudioElement(
-            'data:audio/mp3;base64,${base64Encode(message_soundBytes!)}');
+        audio = AudioElement();
+        audio!.src =
+            'data:audio/mp3;base64,${base64Encode(message_soundBytes!)}';
         audio!.load();
       });
     }

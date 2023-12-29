@@ -1,11 +1,10 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
 import 'dart:async';
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:js';
 import 'dart:typed_data';
-
-import 'package:universal_html/html.dart';
+import 'dart:html';
+import 'package:flutter/foundation.dart';
 
 class WebAudioRecorder {
   MediaRecorder? _mediaRecorder;
@@ -41,7 +40,7 @@ class WebAudioRecorder {
   Future<Uint8List> stop() async {
     _metadataCompleter = Completer<Uint8List>();
 
-    if (_mediaRecorder != null) {
+    if (_mediaRecorder != null && kIsWeb) {
       _mediaRecorder!.stop();
       _mediaRecorder!.stream!.getTracks().forEach((track) {
         track.stop();

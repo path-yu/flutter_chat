@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -27,7 +26,9 @@ import 'package:flutter_chat/provider/current_agora_engine.dart';
 import 'package:flutter_chat/provider/current_brightness.dart';
 import 'package:flutter_chat/provider/current_primary_swatch.dart';
 import 'package:flutter_chat/provider/current_user.dart';
-import 'package:flutter_chat/utils/web_audio_recorder.dart';
+import 'package:flutter_chat/utils/web_audio_recorder_io.dart'
+    if (dart.library.html) 'package:flutter_chat/utils/web_audio_recorder.dart';
+
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,9 +38,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:record/record.dart';
+
 import 'package:path/path.dart' as p;
-// ignore: avoid_web_libraries_in_flutter
-import 'package:web_socket_channel/status.dart' as status;
 
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic>? parentChatData;
